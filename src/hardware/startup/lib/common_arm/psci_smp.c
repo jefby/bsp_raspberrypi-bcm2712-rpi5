@@ -49,6 +49,11 @@
 
 int psci_cpu_on_cmd = -1;
 
+/**
+PSCI, Power State Coordination Interface，由ARM定义的电源管理接口规范，通常由Firmware来实现，
+而Linux系统可以通过smc/hvc指令来进入不同的Exception Level，进而调用对应的实现。
+*/
+
 int
 psci_smp_start(unsigned cpu, void (*start)(void)) {
 	if (psci_cpu_on_cmd == -1) {

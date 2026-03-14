@@ -52,6 +52,21 @@
  *    FDT pinctrl@7d504100 node has: compatible = "brcm,bcm2712-pinctrl";
  *  - revision 1.1, uses BCM2712 D0 stepping SOC with
  *    FDT pinctrl@7d504100 node has: compatible = "brcm,bcm2712d0-pinctrl";
+
+
+
+ RasPi5 CPU chip introduce
+
+ Built around a quad-core Arm Cortex-A76 CPU cluster, clocked at up to 2.4 GHz,
+ with 512 kB per-core L2 caches and a 2 MB shared L3 cache, 
+ it integrates an improved 12-core VideoCore VII GPU; 
+ a hardware video scaler and HDMI controller capable of driving dual 4Kp60 displays;
+ and a Raspberry Pi-developed HEVC decoder and Image Signal Processor. 
+ A 32-bit LPDDR4X memory interface provides up to 17 GB/s of memory bandwidth, 
+ while ×1 and ×4 PCI Express interfaces support high-bandwidth external peripherals; 
+ on Raspberry Pi 5 the latter is used to connect to the Raspberry Pi RP1 south bridge, 
+ which provides the bulk of the external-facing I/O functionality on the platform.
+ 
  */
 #define BCM2712_STEPPING_C1         (0U)
 #define BCM2712_STEPPING_D0         (1U)
@@ -548,6 +563,7 @@ void init_gpio_aon_bcm(void)
         bcm2712_gpio_aon_bcm_set_fsel(p->pin_num, p->fsel);
         bcm2712_gpio_aon_bcm_set_pull(p->pin_num, p->pull);
         if (p->fsel == FUNC_OP) {
+			///输出
             bcm2712_gpio_aon_bcm_set_level(p->pin_num, p->gpio_lvl);
         }
         if (debug_flag > 1) {
