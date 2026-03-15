@@ -20,6 +20,7 @@ BOARD=$(notdir $(BOARD_ROOT))
 SOC_ROOT=$(patsubst %/,%,$(dir $(BOARD_ROOT)))
 SOC=$(notdir $(SOC_ROOT))
 
+###Here NAME=startup-bcm2712-rpi5
 NAME = startup-$(BOARD)
 EXTRA_SILENT_VARIANTS+=$(subst -, ,$(SOC) $(BOARD) $(SECTION))
 

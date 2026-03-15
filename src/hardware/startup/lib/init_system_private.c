@@ -181,7 +181,7 @@ init_system_private() {
 	// Try and restore the IFS, if enabled
 	if(!(rifs_flag & RIFS_FLAG_ENABLE) || rifs_restore_ifs(ifs_paddr) == -1) {
 		// Normal (full) load of the IFS
-		load_ifs(ifs_paddr);
+		load_ifs(ifs_paddr);////这个是qnx下主要ifs
 	}
 
 	//

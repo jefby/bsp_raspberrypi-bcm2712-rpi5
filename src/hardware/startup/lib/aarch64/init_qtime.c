@@ -46,5 +46,7 @@
 void
 init_qtime(void) {
 	// use the generic timer support with standard PPI interrupt vectors
+	// PPI(Private Peripheral Interrupt)，所谓"private"，是指这个中断为CPU私有/专用，
+	// 那什么中断会有这种特性呢？比如通用定时器中断啊，温度传感器中断啊
 	init_qtime_v8gt(27, 28);
 }
