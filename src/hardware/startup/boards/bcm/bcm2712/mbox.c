@@ -239,6 +239,7 @@ void mbox_get_board_mac_address(uint8_t* const address) {
 }
 
 uint64_t mbox_get_board_serial(void) {
+////因为是读写寄存器，值随时会变化
     volatile struct {
         struct mbox_msg_header header;
         struct mbox_msg_tag tag;

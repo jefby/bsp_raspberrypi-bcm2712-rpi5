@@ -42,7 +42,11 @@
 
 #include <startup.h>
 
-
+/**
+qtime 是一个至关重要的启动时元数据结构，它的全称通常可以理解为 "QNX Time Information"。
+简单来说，qtime 是由 Startup 程序（运行在内核之前的代码）填充，
+并传递给 Microkernel（微内核） 的一段内存数据，用于同步硬件计时器和系统实际时间。
+*/
 void
 init_qtime(void) {
 	// use the generic timer support with standard PPI interrupt vectors

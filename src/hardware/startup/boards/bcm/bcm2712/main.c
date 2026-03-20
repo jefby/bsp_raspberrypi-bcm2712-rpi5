@@ -232,7 +232,7 @@ int main(const int argc, char ** const argv)
 
     init_pcie_ext_msi_controller();
 
-    init_intrinfo();
+    init_intrinfo();///初始化gicv2
 
     init_qtime();
 
