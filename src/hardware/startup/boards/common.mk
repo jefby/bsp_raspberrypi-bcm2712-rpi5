@@ -13,7 +13,7 @@ LIBS_aarch64 = fdt
 LIBS += startup$(subst .,-,$(PSTAG_$(PADDR_SIZE))) lzo2 ucl drvr $(LIBS_$(CPU))
 
 # The board level is one up from the CPU level
-BOARD_ROOT=$(patsubst %/,%,$(dir $(CPU_ROOT)))
+BOARD_ROOT=$(patsubst %/,%,$(dir $(dir $(CPU_ROOT))))
 BOARD=$(notdir $(BOARD_ROOT))
 
 # The soc level is one up from the BOARD level
@@ -22,6 +22,10 @@ SOC=$(notdir $(SOC_ROOT))
 
 ###Here NAME=startup-bcm2712-rpi5
 NAME = startup-$(BOARD)
+$(warning DEBUG: CPU_ROOT=$(CPU_ROOT))
+$(warning DEBUG: BOARD_ROOT=$(BOARD_ROOT))
+$(warning DEBUG: BOARD=$(BOARD))
+$(warning DEBUG: NAME=$(NAME))
 EXTRA_SILENT_VARIANTS+=$(subst -, ,$(SOC) $(BOARD) $(SECTION))
 
 USEFILE =
