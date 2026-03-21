@@ -13,8 +13,11 @@ LIBS_aarch64 = fdt
 LIBS += startup$(subst .,-,$(PSTAG_$(PADDR_SIZE))) lzo2 ucl drvr $(LIBS_$(CPU))
 
 # The board level is one up from the CPU level
-BOARD_ROOT=$(patsubst %/,%,$(dir $(CPU_ROOT)))
+##HACK here to get the board name into the NAME variable for the pinfo file I don't know why this CPU_ROOT is not defined
+CPU_ROOT= ../../../src/hardware/startup/lib/aarch64
+BOARD_ROOT=$(patsubst %/,%,$(dir $(dir $(CPU_ROOT))))
 BOARD=$(notdir $(BOARD_ROOT))
+# BOARD=bcm2712-rpi5
 
 # The soc level is one up from the BOARD level
 SOC_ROOT=$(patsubst %/,%,$(dir $(BOARD_ROOT)))
@@ -22,6 +25,13 @@ SOC=$(notdir $(SOC_ROOT))
 
 ###Here NAME=startup-bcm2712-rpi5
 NAME = startup-$(BOARD)
+$(warning DEBUG: CPU_ROOT=$(CPU_ROOT))
+$(warning DEBUG: BOARD_ROOT=$(BOARD_ROOT))
+$(warning DEBUG: BOARD=$(BOARD))
+$(warning DEBUG: NAME=$(NAME))
+$(warning DEBUG: SOC_ROOT=$(SOC_ROOT))
+$(warning DEBUG: SOC=$(SOC))
+$(warning QNX_TARGET=$(QNX_TARGET))
 EXTRA_SILENT_VARIANTS+=$(subst -, ,$(SOC) $(BOARD) $(SECTION))
 
 USEFILE =

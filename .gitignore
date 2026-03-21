@@ -1,3 +1,6 @@
 *.pinfo
 *.o
 *.dep
+*.def
+*.map
+install

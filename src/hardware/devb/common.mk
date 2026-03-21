@@ -6,11 +6,11 @@ include $(QCONFIG)
 BIND = $(strip $(FBIND) $(CBIND))
 FBBIND = $(filter io-blk, $(FBIND))
 FSBIND = $(filter-out io-blk, $(FBIND))
-
-ifndef NAME
+##TODO: just hack later check
+# ifndef NAME
 NAME=devb-$(SECTION)
 EXTRA_SILENT_VARIANTS+=$(SECTION)
-endif
+# endif
 
 SERVICES_ROOT=$(PRODUCT_ROOT)/../services
 
@@ -21,7 +21,9 @@ EXTRA_INCVPATH += $(PROJECT_ROOT)/$(SECTION)/public
 USEFILE=$(PROJECT_ROOT)/$(SECTION)/$(NAME).use
 INSTALLDIR=sbin
 EXCLUDE_OBJS = dl.o
-CCFLAGS += -D__DEVB_NAME__=$(BUILDNAME)
+##TODO: just hack later check
+# CCFLAGS += -D__DEVB_NAME__=$(BUILDNAME)
+CCFLAGS += -D__DEVB_NAME__=devb-sdmmc
 CCFLAGS += -DCAM_PTHREAD_SETNAME
 
 # Set stack size to 64K
