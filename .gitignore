@@ -4,3 +4,6 @@
 *.def
 *.map
 install
+*.a
+*.bin
+*.sym
