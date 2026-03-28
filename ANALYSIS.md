@@ -146,11 +146,12 @@ startup-script (按顺序启动各驱动和服务)
 ```
 
 ## 编译及使用
-bash build.sh后会在images目录生成ifs-rpi5.bin，参考文档
-https://www.qnx.com/developers/docs/BSP8.0/com.qnx.doc.bsp_raspberrypi.bcm2712.rpi5_8.0/topic/install_notes.html
-修改config.txt使用qnx ifs启动
-![设置config.txt](./docs/img/set_config_txt.png)
-详细设置：
+- bash build.sh后会在images目录生成ifs-rpi5.bin
+- 然后参考文档https://www.qnx.com/developers/docs/BSP8.0/com.qnx.doc.bsp_raspberrypi.bcm2712.rpi5_8.0/topic/install_notes.html进行安装
+- 修改config.txt使用qnx ifs启动
+- ![设置config.txt](./docs/img/set_config_txt.png)
+
+### 详细设置
 - https://www.qnx.com/developers/docs/BSP8.0/com.qnx.doc.bsp_raspberrypi.bcm2712.rpi5_8.0/topic/bsp_transfer_overview.html
 - https://www.qnx.com/developers/docs/BSP8.0/com.qnx.doc.bsp_raspberrypi.bcm2712.rpi5_8.0/topic/bsp_transfer.html
 
