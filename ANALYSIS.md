@@ -149,7 +149,11 @@ startup-script (按顺序启动各驱动和服务)
 - bash build.sh后会在images目录生成ifs-rpi5.bin
 - 然后参考文档https://www.qnx.com/developers/docs/BSP8.0/com.qnx.doc.bsp_raspberrypi.bcm2712.rpi5_8.0/topic/install_notes.html 进行安装
 - 修改config.txt使用qnx ifs启动
-- ![设置config.txt](./docs/img/set_config_txt.png)
+- ![设置config.txt](./docs/img/set_config_txt2.png)
+- 完整的config.txt参考仓库的docs/config.txt
+- ssh默认登录ssh qnxuser@XXX 密码qnxuser
+-  ![ssh登录](./docs/img/ssh_login.png)
+
 
 ### 详细设置
 - https://www.qnx.com/developers/docs/BSP8.0/com.qnx.doc.bsp_raspberrypi.bcm2712.rpi5_8.0/topic/bsp_transfer_overview.html
