@@ -7,3 +7,4 @@ install
 *.a
 *.bin
 *.sym
+slog_nic_drv_*

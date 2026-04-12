@@ -5,7 +5,7 @@ CLEAN_BUILD=false
 if [[ "$1" == "--clean" ]]; then
     CLEAN_BUILD=true
 fi
-
+START_TIME=$(date +%s)
 SRC_DIR=$(pwd)
 echo "Building QNX Neutrino RTOS for Raspberry Pi 5"
 echo "Source directory: $SRC_DIR"
@@ -19,4 +19,7 @@ if $CLEAN_BUILD; then
 fi
 
 make || { echo "Build failed!"; exit 1; }
+END_TIME=$(date +%s)
+ELAPSED_TIME=$((END_TIME - START_TIME))
+echo "Build time: $ELAPSED_TIME seconds"
 echo "Build completed."
