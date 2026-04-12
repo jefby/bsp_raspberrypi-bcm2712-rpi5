@@ -1,0 +1,225 @@
+  0.79 RPi: BOOTSYS release VERSION:ab8a9dde DATE: 2026/01/21 TIME: 13:38:47
+  0.79 BOOTMODE: 0x06 partition 0 build-ts BUILD_TIMESTAMP=1769002727 serial 1239e4ba boardrev b04171 stc 795213
+  0.80 AON_RESET: 00000003 PM_RSTS 00001020
+  0.80 POWER_OFF_ON_HALT: 0 WAIT_FOR_POWER_BUTTON 0 power-on-reset 0
+  0.81 RP1_BOOT chip ID: 0x20001927
+  0.82 PCIEx1: PWR 0 DET_WAKE 0
+  0.82 part 00000000 reset_info 00000000
+  0.82 PMIC reset-event 00000000 rtc 000001a8 alarm 00000000 enabled 0
+  0.83 uSD voltage 3.3V
+  0.83 SDRAM_CONFIG: 06
+  0.83 Initialising SDRAM rank 1 total-size: 16Gbit 4267 part: 0 (0x06 0x06)
+  0.84 DDR 4267 0 0 16 152 BL:1
+  1.34 RP1 FW: load 0
+  1.35 RP1_BOOT chip ID: 0x20001927
+
+  0.95 RPi: BOOTSYS release VERSION:ab8a9dde DATE: 2026/01/21 TIME: 13:38:47
+  0.96 BOOTMODE: 0x06 partition 0 build-ts BUILD_TIMESTAMP=1769002727 serial 1239e4ba boardrev b04171 stc 963826
+  0.97 AON_RESET: 00000003 PM_RSTS 00001000
+  0.97 POWER_OFF_ON_HALT: 0 WAIT_FOR_POWER_BUTTON 0 power-on-reset 1
+  0.98 RP1_BOOT chip ID: 0x20001927
+  0.99 PCIEx1: PWR 0 DET_WAKE 0
+  0.99 part 00000000 reset_info 00000000
+  0.99 PMIC reset-event 00000000 rtc 00000000 alarm 00000000 enabled 0
+  1.00 uSD voltage 3.3V
+  1.00 SDRAM_CONFIG: 06
+  1.00 Initialising SDRAM rank 1 total-size: 16Gbit 4267 part: 0 (0x06 0x06)
+  1.01 DDR 4267 0 0 16 152 BL:1
+  1.50 RP1 FW: load 0
+  1.52 RP1_BOOT chip ID: 0x20001927
+  2.23 RP1 FW: load 1
+  2.64 OTP boardrev b04171 bootrom a a
+  2.64 Customer key hash 0000000000000000000000000000000000000000000000000000000000000000
+  2.65 VC-JTAG unlocked
+  2.67 RP1_BOOT chip ID: 0x20001927
+
+  3.30 PCI2 init
+  3.30 PCI2 reset
+  3.35 PCIe scan 00001de4:00000001
+  3.35 RP1_CHIP_INFO 20001927
+
+  3.35 RPi: BOOTLOADER release VERSION:ab8a9dde DATE: 2026/01/21 TIME: 13:38:47
+  3.36 BOOTMODE: 0x06 partition 0 build-ts BUILD_TIMESTAMP=1769002727 serial 1239e4ba boardrev b04171 stc 3363536
+  3.37 PCIEx1: PWR 0 DET_WAKE 0
+  3.76 M.2 PCIe HAT not detected.
+  3.40 usb_pd_init status 3
+  3.40 USB_PD CONFIG 0 41
+  3.48 XHCI-STOP
+  3.48 xHC0 ver: 272 HCS: 03000440 140000f1 07ff000a HCC: 0240fe6d
+  3.48 USBSTS 1
+  3.48 xHC0 ver: 272 HCS: 03000440 140000f1 07ff000a HCC: 0240fe6d
+  3.49 xHC0 ports 3 slots 64 intrs 4
+  3.50 XHCI-STOP
+  3.50 xHC1 ver: 272 HCS: 03000440 140000f1 07ff000a HCC: 0240fe6d
+  3.51 USBSTS 1
+  3.51 xHC1 ver: 272 HCS: 03000440 140000f1 07ff000a HCC: 0240fe6d
+  3.51 xHC1 ports 3 slots 64 intrs 4
+  3.52 USB-PD: src-cap PDO object1 0x0a0191f4
+  3.52 Current 5000 mA
+  3.52 Voltage 5000 mV
+  3.53 USB-PD: src-cap PDO object2 0x0002d12c
+  3.53 Current 3000 mA
+  3.53 Voltage 9000 mV
+  3.53 USB-PD: src-cap PDO object3 0x0003c0fa
+  3.54 Current 2500 mA
+  3.54 Voltage 12000 mV
+  3.54 USB-PD: src-cap PDO object4 0x0004b0c8
+  3.55 Current 2000 mA
+  3.55 Voltage 15000 mV
+  3.55 USB-PD: src-cap PDO object5 0xc8dc213c
+  3.56 USB-PD: src-cap PDO object6 0xc9402128
+  3.60 SD_OC: 0
+  3.04 Boot mode: SD (01) order f4
+  8.26 SD HOST: 200000000 CTL0: 0x00800000 BUS: 400000 Hz actual: 390625 HZ div: 512 (256) status: 0x1fff0000 delay: 276
+  8.27 SD HOST: 200000000 CTL0: 0x00800f00 BUS: 400000 Hz actual: 390625 HZ div: 512 (256) status: 0x1fff0000 delay: 276
+  8.45 OCR c0ff8000 [262]
+CID: 0003534453443332478539feacb1019c
+CSD: 400e00325b590000edc87f800a404000
+  8.45 SD: bus-width: 4 spec: 2 SCR: 0x02358043 0x00000000
+  8.46 SD HOST: 200000000 CTL0: 0x00800f04 BUS: 50000000 Hz actual: 50000000 HZ div: 4 (2) status: 0x1fff0000 delay: 2
+  8.47 MBR: 0x00004000, 1048576 type: 0x0c
+  8.47 MBR: 0x00104000,61268992 type: 0x83
+  8.48 MBR: 0x00000000,       0 type: 0x00
+  8.48 MBR: 0x00000000,       0 type: 0x00
+  8.89 Trying partition: 0
+  8.35 type: 32 lba: 16384 'mkfs.fat' ' bootfs     ' clusters 261116 (4)
+  8.53 rsc 32 fat-sectors 2040 root dir cluster 2 sectors 0 entries 0
+  8.54 FAT32 clusters 261116
+  8.55 [sdcard] autoboot.txt not found
+  8.55 Select partition rsts 0 C(boot_partition) 0 EEPROM config 0 result 1
+  8.60 Trying partition: 1
+  8.63 type: 32 lba: 16384 'mkfs.fat' ' bootfs     ' clusters 261115 (4)
+  8.56 rsc 32 fat-sectors 2040 root dir cluster 2 sectors 0 entries 0
+  8.57 FAT32 clusters 261115
+  8.80 Read config.txt bytes     1321 hnd 0xf8a8
+  8.58 [sdcard] pieeprom.upd not found
+  8.85 usb_max_current_enable default 0 max-current 5000
+  8.97 Read bcm2712-rpi-5-b.dtb bytes    78765 hnd 0x125
+  8.59 dt-match: compatible: raspberrypi,5-model-b match: brcm,bcm2712
+  8.60 dt-match: compatible: brcm,bcm2712 match: brcm,bcm2712
+  8.62 MESS:00:00:08.622769:0: *** Restart logging
+  8.26 Read /config.txt bytes     1321 hnd 0xf8a8
+  8.62 MESS:00:00:08.629706:0: board: boardrev b04171 otp b04171
+  8.36 Read /config.txt bytes     1321 hnd 0xf8a8
+  8.64 MESS:00:00:08.642367:0: Initial voltage 800000 temp 26289
+  8.84 MESS:00:00:08.842813:0: avs_2712: AVS pred 8380 838000 temp 25739
+  8.84 MESS:00:00:08.846420:0: vpred 838 mV +0
+  8.85 MESS:00:00:08.850626:0: over-voltage idle: 0 avs: 78000 delta: 0 (0x00000000)
+  8.86 MESS:00:00:08.862747:0: FB framebuffer_swap 1
+  8.86 MESS:00:00:08.864614:0: Select resolution HDMI0/2 hotplug 0 max_mode 2
+  8.87 MESS:00:00:08.871504:0: Select resolution HDMI1/2 hotplug 0 max_mode 2
+  8.88 MESS:00:00:08.880021:0: No matching initramfs found (expected %▒^) - auto_initramfs disabled
+  8.88 MESS:00:00:08.887267:0: dtb_file 'bcm2712-rpi-5-b.dtb'
+  8.89 Loading 'bcm2712-rpi-5-b.dtb' to 0x00000000 offset 0x100
+  8.04 Read bcm2712-rpi-5-b.dtb bytes    78765 hnd 0x125
+  8.42 Read /overlays/overlay_map.dtb bytes     5887 hnd 0x8c0d
+  8.53 Read /overlays/bcm2712d0.dtbo bytes     1363 hnd 0x8add
+  8.97 MESS:00:00:08.976922:0: Loaded overlay 'bcm2712d0'
+  9.04 PCIEx1: PWR 0 DET_WAKE 0
+  9.56 Read /config.txt bytes     1321 hnd 0xf8a8
+  9.05 MESS:00:00:09.057928:0: dtparam: audio=on
+  9.06 MESS:00:00:09.066526:0: Unknown dtparam 'audio' - ignored
+  9.94 Read /overlays/vc4-kms-v3d-pi5.dtbo bytes     3350 hnd 0x8cf2
+  9.14 MESS:00:00:09.141641:0: Loaded overlay 'vc4-kms-v3d-pi5'
+  9.11 Read /cmdline.txt bytes      214 hnd 0xf8a7
+  9.31 MESS:00:00:09.313391:0: Read command line from file 'cmdline.txt':
+  9.31 MESS:00:00:09.319893:0: 'console=serial0,115200 console=tty1 root=PARTUUID=3a2f4345-02 rootfstype=ext4 fsck.repair=yes rootwait quiet splash plymouth.ignore-serial-consoles ds=nocloud;i=rpi-imager-1775837070842 cfg80211.ieee80211_regdom=CN'
+  9.52 MESS:00:00:09.522789:0: RPM 4806, max RPM 4806
+  9.58 BMD "armstub8-2712.bin" not found
+  9.82 fs_open: 'armstub8-2712.bin'
+  9.58 Loading 'ifs-rpi5.bin' to 0x00000000 offset 0x200000
+ 11.15 Read ifs-rpi5.bin bytes 40724312 hnd 0x30005
+ 11.33 MESS:00:00:11.338738:0: Kernel relocated to 0x80000
+ 11.34 MESS:00:00:11.341127:0: Device tree loaded to 0x2efec500 (size 0x13a3e)
+ 11.34 PCI1 reset
+ 11.35 PCI2 reset
+ 11.36 set_reboot_order 0
+ 11.36 set_reboot_arg1 0
+ 11.37 USB-OTG disconnect
+ 11.41 MESS:00:00:11.413467:0: BSC_A no ACK
+ 11.41 MESS:00:00:11.414702:0: BSC_A no ACK
+ 11.41 MESS:00:00:11.418628:0: BSC_A no ACK
+ 11.44 MESS:00:00:11.442556:0: BSC_B no ACK
+ 11.44 MESS:00:00:11.443783:0: BSC_B no ACK
+ 11.44 MESS:00:00:11.447718:0: BSC_B no ACK
+ 11.47 MESS:00:00:11.471489:0: Starting OS 11471 ms
+ 11.47 MESS:00:00:11.477100:0: 00000040: -> 00000480
+ 11.47 MESS:00:00:11.478954:0: 00000030: -> 00100080
+ 11.48 MESS:00:00:11.483666:0: 00000034: -> 00100080
+ 11.48 MESS:00:00:11.488379:0: 00000038: -> 00100080
+ 11.49 MESS:00:00:11.493092:0: 0000003c: -> 00100080
+
+NOTICE:  BL31: v2.6(release):v2.6-240-gfc45bc492
+NOTICE:  BL31: Built : 12:55:13, Dec  4 2024
+.....
+Failed to get FDT PSCI
+Hypervisor support disabled
+MMU: 16-bit ASID 40-bit PA TCR_EL1=00000012b5183519
+GICv2: 320 interrupts
+GICv2: routing SPIs to gic cpu 0
+cpu0: MPIDR=0000000081000000
+cpu0: MIDR=414fd0b1 Cortex-A76 r4p1
+cpu0: DCZID_EL0=0x00000004 (64 bytes)
+cpu0: CWG=4 ERG=4 Dminline=4 Iminline=4 PIPT
+cpu0: CLIDR=c3000123 LoUU=0 LoC=3 LoUIS=0
+cpu0: L1 Icache 64K linesz=64 set/way=256/4
+cpu0: L1 Dcache 64K linesz=64 set/way=256/4
+cpu0: L2 Unified 512K linesz=64 set/way=1024/8
+cpu0: L3 Unified 2048K linesz=64 set/way=2048/16
+cpu0: GICv2 cpu interface 0
+fdt: found node compatible with brcm,bcm2712d0-aon-pinctrl
+Loading IFS...done
+cpu1: MPIDR=0000000081000100
+cpu1: MIDR=414fd0b1 Cortex-A76 r4p1
+cpu1: DCZID_EL0=0x00000004 (64 bytes)
+cpu1: CWG=4 ERG=4 Dminline=4 Iminline=4 PIPT
+cpu1: CLIDR=c3000123 LoUU=0 LoC=3 LoUIS=0
+cpu1: L1 Icache 64K linesz=64 set/way=256/4
+cpu1: L1 Dcache 64K linesz=64 set/way=256/4
+cpu1: L2 Unified 512K linesz=64 set/way=1024/8
+cpu1: L3 Unified 2048K linesz=64 set/way=2048/16
+cpu1: GICv2 cpu interface 1
+cpu2: MPIDR=0000000081000200
+cpu2: MIDR=414fd0b1 Cortex-A76 r4p1
+cpu2: DCZID_EL0=0x00000004 (64 bytes)
+cpu2: CWG=4 ERG=4 Dminline=4 Iminline=4 PIPT
+cpu2: CLIDR=c3000123 LoUU=0 LoC=3 LoUIS=0
+cpu2: L1 Icache 64K linesz=64 set/way=256/4
+cpu2: L1 Dcache 64K linesz=64 set/way=256/4
+cpu2: L2 Unified 512K linesz=64 set/way=1024/8
+cpu2: L3 Unified 2048K linesz=64 set/way=2048/16
+cpu2: GICv2 cpu interface 2
+cpu3: MPIDR=0000000081000300
+cpu3: MIDR=414fd0b1 Cortex-A76 r4p1
+cpu3: DCZID_EL0=0x00000004 (64 bytes)
+cpu3: CWG=4 ERG=4 Dminline=4 Iminline=4 PIPT
+cpu3: CLIDR=c3000123 LoUU=0 LoC=3 LoUIS=0
+cpu3: L1 Icache 64K linesz=64 set/way=256/4
+cpu3: L1 Dcache 64K linesz=64 set/way=256/4
+cpu3: L2 Unified 512K linesz=64 set/way=1024/8
+cpu3: L3 Unified 2048K linesz=64 set/way=2048/16
+cpu3: GICv2 cpu interface 3
+
+System page at phys:0000000002760000 user:ffffff8040208000 kern:ffffff8040204000
+Starting next program at vffffff80600754b0
+syspage::hypinfo::flags=0x00000000
+
+Welcome to QNX 8.0.0 on RaspberryPi5 !
+
+Starting WatchDog ...
+Starting PCI Server ...
+Starting serial driver (/dev/ser10)
+RP1 support 61 MSI-X IRQs, setup 7 IRQs
+Starting SPI driver
+Starting SDMMC driver (/dev/sd0)
+Starting USB xHCI controller in the host mode (/dev/usb/*)...
+Starting devf-ram filesystem ...
+Starting networking ...
+Starting DHCP client ...
+Starting SSH daemon ...
+Starting I2C driver
+Starting fan control driver
+Starting shell ...
+#
+# uname -a
+QNX localhost 8.0.0 2025/07/30-19:17:34EDT RaspberryPi5 aarch64le
