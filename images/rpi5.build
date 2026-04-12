@@ -104,6 +104,7 @@
     # ksh /proc/boot/uart4_console.sh
     ksh /proc/boot/i2c_start.sh
     ksh /proc/boot/fan_start.sh
+    ksh /proc/boot/fan_control.sh &
 
 
     ############################################################################################
@@ -215,6 +216,7 @@ fi
 /lib/dll/mods-usb.so=mods-usb.so
 /lib/dll/mods-fdt.so=mods-fdt.so
 /lib/dll/mods-phy_fdt.so=mods-phy_fdt.so
+
 
 ################################################################################################
 ## Network driver and support
@@ -606,6 +608,9 @@ ldqnx-64.so.2=ldqnx-64.so.2
 ################################################################################################
 /usr/bin/toybox=toybox
 
+##################tools
+/usr/bin/awk=awk
+
 [type=link] /bin/cat=/usr/bin/toybox
 [type=link] /bin/chmod=/usr/bin/toybox
 [type=link] /bin/cp=/usr/bin/toybox
@@ -894,6 +899,11 @@ echo 200 > /dev/fan
 ## fan control resource manager
 ################################################################################################
 /sbin/fan-rpi5=fan-rpi5
+
+################################################################################################
+## Fan control script
+################################################################################################
+/proc/boot/fan_control.sh=../fan_control.sh
 
 ################################################################################################
 ## Wifi support
