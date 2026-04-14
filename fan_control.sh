@@ -15,30 +15,6 @@ SPEED_HIGH=100
 
 POLL_INTERVAL=5     # 5秒检查一次
 
-# GPIO配置（树莓派5官方风扇接口）
-FAN_GPIO=12
-
-# BCM2712 PWM寄存器地址
-GPIO_BASE=0x1F000D0000
-PWM_BASE=0x1F000D0000
-PWM_OFFSET=0x30000
-
-# 使用devmem访问寄存器的函数
-write_reg() {
-    local addr=$1
-    local val=$2
-    devmem $addr  $val 2>/dev/null
-}
-
-read_reg() {
-    local addr=$1
-    devmem $addr  2>/dev/null
-}
-
-# 计算地址（十六进制）
-calc_addr() {
-    printf "0x%X" $(($1 + $2))
-}
 
 # 设置风扇速度
 set_fan_speed() {
