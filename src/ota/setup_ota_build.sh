@@ -215,7 +215,7 @@ tail -f /tmp/ota_client.log
 cat /etc/ota_version  # 应输出：3
 
 # 检查当前 IFS
-cat /proc/boot/config.txt  # kernel=ifs-rpi5_B.bin 或 ifs-rpi5.bin
+cat /var/boot/config.txt  # kernel=ifs-rpi5_B.bin 或 ifs-rpi5.bin
 ```
 
 ## 故障排查
@@ -267,7 +267,7 @@ shutdown -r now
 如果更新出现问题，可以手动回滚：
 
 ```bash
-# 编辑 /proc/boot/config.txt
+# 编辑 /var/boot/config.txt
 # 改为指向另一个 IFS 文件
 
 # 或直接启动时按住按钮、修改 config.txt，然后重启

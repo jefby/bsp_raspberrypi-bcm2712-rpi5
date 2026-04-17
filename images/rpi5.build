@@ -932,9 +932,9 @@ echo 200 > /dev/fan
 OTA_SERVER=http://192.168.50.148:8080
 OTA_CHECK_INTERVAL=300
 OTA_ENABLED=1
-BOOT_PATH=/proc/boot
+BOOT_PATH=/var/boot
 VERSION_FILE=/etc/ota_version
-CONFIG_FILE=/proc/boot/config.txt
+CONFIG_FILE=/var/boot/config.txt
 LOG_FILE=/tmp/ota_client.log
 }
 

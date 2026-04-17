@@ -17,6 +17,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <cstdio>
+#include <sys/mount.h>
 
 #define mysleep(time_second) std::this_thread::sleep_for(std::chrono::seconds(time_second))
 // ==================== 配置结构体 ====================
@@ -435,11 +436,14 @@ bool ensure_boot_mounted()
     mkdir(mount_point, 0755);
 
     // 2. 尝试挂载
-    if (mount(dev, mount_point, _MOUNT_FSYS, "dos", NULL, 0) != 0) {
-        perror("mount failed");
+    char cmd[256] = {0};
+    snprintf(cmd, sizeof(cmd), "mount -t dos %s %s", dev, mount_point);
+    int ret = system(cmd);
+
+    if (ret != 0) {
+        printf("mount %s to %s failed\n", dev, mount_point);
         return false;
     }
-
     return true;
 }
 

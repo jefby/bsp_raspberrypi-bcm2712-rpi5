@@ -114,13 +114,13 @@ OTA_CHECK_INTERVAL=300
 OTA_ENABLED=1
 
 # boot 分区挂载点
-BOOT_PATH=/proc/boot
+BOOT_PATH=/var/boot
 
 # 版本文件路径
 VERSION_FILE=/etc/ota_version
 
 # config.txt 路径
-CONFIG_FILE=/proc/boot/config.txt
+CONFIG_FILE=/var/boot/config.txt
 
 # 日志文件路径
 LOG_FILE=/tmp/ota_client.log
@@ -178,7 +178,7 @@ grep "ERROR\|Failed" /tmp/ota_client.log
    ↓
 7. 更新 /etc/ota_version
    ↓
-8. 修改 /proc/boot/config.txt 中的 kernel 参数
+8. 修改 /var/boot/config.txt 中的 kernel 参数
    ↓
 9. 系统自动重启
    ↓

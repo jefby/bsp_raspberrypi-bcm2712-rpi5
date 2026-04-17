@@ -27,7 +27,7 @@ ssh user@server "echo 2 > /var/www/ota/version.txt"
 |------|------|------|
 | OTA 配置 | `/etc/ota_config` | 服务器地址、检查间隔等 |
 | 版本号 | `/etc/ota_version` | 当前本地版本 |
-| IFS 配置 | `/proc/boot/config.txt` | kernel 参数 |
+| IFS 配置 | `/var/boot/config.txt` | kernel 参数 |
 | 日志 | `/tmp/ota_client.log` | 调试日志 |
 
 ## 日志查看
@@ -53,7 +53,7 @@ ps aux | grep ota_client
 cat /etc/ota_version
 
 # 查看当前加载的 IFS
-grep "kernel=" /proc/boot/config.txt
+grep "kernel=" /var/boot/config.txt
 
 # 测试服务器连接
 curl http://192.168.50.148:8080/version.txt
@@ -129,7 +129,7 @@ curl http://ota-server:8080/version.txt  # 应输出 3
 ssh root@pi5.local
 
 # 2. 编辑 config.txt
-vi /proc/boot/config.txt
+vi /var/boot/config.txt
 # 改为指向另一个 IFS：
 # kernel=ifs-rpi5_B.bin
 

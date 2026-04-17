@@ -98,13 +98,13 @@ OTA 客户端循环：
     3. 比较版本：
         if remote_version > local_version:
           4a. 确定目标 IFS：
-              current_ifs = grep "kernel=" /proc/boot/config.txt
+              current_ifs = grep "kernel=" /var/boot/config.txt
               target_ifs = (current_ifs == "ifs-rpi5.bin") ? "ifs-rpi5_B.bin" : "ifs-rpi5.bin"
           4b. 下载新 IFS：
               curl -o /proc/boot/{target_ifs} {OTA_SERVER}/ifs-rpi5_v{version}.bin
           4c. 验证文件大小 > 10MB
           4d. 更新版本号：echo {version} > /etc/ota_version
-          4e. 更新 config.txt：echo "kernel={target_ifs}" > /proc/boot/config.txt
+          4e. 更新 config.txt：echo "kernel={target_ifs}" > /var/boot/config.txt
           4f. 系统重启：shutdown -r now
         else:
           等待下次检查
