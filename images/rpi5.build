@@ -221,6 +221,7 @@ fi
 ## OTA and Network utilities support
 ################################################################################################
 /lib/libcurl.so=libcurl.so
+/lib/libcares.so.8=libcares.so.8
 /usr/bin/curl=curl
 
 
