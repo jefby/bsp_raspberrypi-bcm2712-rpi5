@@ -104,6 +104,7 @@
     # ksh /proc/boot/uart4_console.sh
     ksh /proc/boot/i2c_start.sh
     ksh /proc/boot/fan_start.sh
+    ksh /proc/boot/fan_control.sh &
 
 
     ############################################################################################
@@ -215,6 +216,13 @@ fi
 /lib/dll/mods-usb.so=mods-usb.so
 /lib/dll/mods-fdt.so=mods-fdt.so
 /lib/dll/mods-phy_fdt.so=mods-phy_fdt.so
+
+################################################################################################
+## OTA and Network utilities support
+################################################################################################
+/lib/libcurl.so=libcurl.so
+/usr/bin/curl=curl
+
 
 ################################################################################################
 ## Network driver and support
@@ -606,6 +614,9 @@ ldqnx-64.so.2=ldqnx-64.so.2
 ################################################################################################
 /usr/bin/toybox=toybox
 
+##################tools
+/usr/bin/awk=awk
+
 [type=link] /bin/cat=/usr/bin/toybox
 [type=link] /bin/chmod=/usr/bin/toybox
 [type=link] /bin/cp=/usr/bin/toybox
@@ -820,6 +831,12 @@ dhcpcd -bqq
 /proc/boot/.ssh-server.sh
 
 ############################################################################################
+## OTA Client (Over-The-Air Update)
+############################################################################################
+echo "Starting OTA client ..."
+/usr/bin/ota_client -c /etc/ota_config -d >> /tmp/ota_client.log 2>&1 &
+
+############################################################################################
 ## REMOTE_DEBUG: gdb or Momentics
 ##  - refer to the help documentation for the gdb, qconn and the IDE
 ##    for more information on remote debugging
@@ -894,6 +911,30 @@ echo 200 > /dev/fan
 ## fan control resource manager
 ################################################################################################
 /sbin/fan-rpi5=fan-rpi5
+
+################################################################################################
+## Fan control script
+################################################################################################
+/proc/boot/fan_control.sh=../fan_control.sh
+
+################################################################################################
+## OTA Client (Over-The-Air Update)
+################################################################################################
+[search=../install/${PROCESSOR}/usr/bin${PFS}${QNX_TARGET}/${PROCESSOR}/usr/bin uid=0 gid=0 perms=0755] /usr/bin/ota_client=ota_client
+
+/etc/ota_version = {
+1
+}
+
+/etc/ota_config = {
+OTA_SERVER=http://192.168.1.100:8080
+OTA_CHECK_INTERVAL=300
+OTA_ENABLED=1
+BOOT_PATH=/proc/boot
+VERSION_FILE=/etc/ota_version
+CONFIG_FILE=/proc/boot/config.txt
+LOG_FILE=/tmp/ota_client.log
+}
 
 ################################################################################################
 ## Wifi support

@@ -4,3 +4,8 @@
 *.def
 *.map
 install
+*.a
+*.bin
+*.sym
+slog_nic_drv_*
+*null*

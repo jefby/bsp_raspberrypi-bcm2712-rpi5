@@ -1,0 +1,166 @@
+Jan 01 00:00:00.035                   random.20486              qcrypto*     0  qcrypto: default tag: 'random'
+Jan 01 00:00:00.035                   random.20486              qcrypto      0  qcrypto: loading configuration file '/etc/qcrypto.conf'
+Jan 01 00:00:00.037                   random.20486              qcrypto      0  qcrypto: 'openssl-3' plugin loaded
+Jan 01 00:00:00.040                  wdtkick.20487                 slog*     0  wdtkick: enable mask: 0x0
+Jan 01 00:00:00.043               pci_server.20489              pci_log*     0  INFO ,1,-10,0 [20489:1]:  
+Jan 01 00:00:00.043               pci_server.20489              pci_log      0  INFO ,1,-10,0 [20489:1]: + PCI Server v3.1 init start +
+Jan 01 00:00:00.410               pci_server.20489              pci_log      0  INFO ,1,-10,0 [20489:1]: + PCI Server v3.1 init complete, OK [(PCI_ERR_OK)] +
+Jan 01 00:00:00.410               pci_server.20489              pci_log      0  INFO ,1,-10,0 [20489:1]:  
+Jan 01 00:00:01.422       devc_serpl011_rpi5.49160                 slog*     0  Override Serial console IRQ from 153 to 152
+Jan 01 00:00:01.428       devb_sdmmc_bcm2712.57357                 slog*  1800  (devb-sdmmc) 1.00A (Apr 11 2026 23:59:59)
+Jan 01 00:00:01.428       devb_sdmmc_bcm2712.57357                 slog      0  (libcam.so) (Nov 20 2023 10:07:53) bver 7020015
+Jan 01 00:00:01.428       devb_sdmmc_bcm2712.57357                 slog   1800  bcm2712_bs_init: controller version: 0x2 caps: aa5107efc
+Jan 01 00:00:01.428       devb_sdmmc_bcm2712.57357                 slog   1800  sdio_cd:  insertion path 0, cd state 0x1
+Jan 01 00:00:01.432       devb_sdmmc_bcm2712.57357                 slog   1800  sdhci_signal_voltage: voltage already 3.3V
+Jan 01 00:00:01.456       devb_sdmmc_bcm2712.57357                 slog   1800  set_vdd_sd_io_state: set SD_IOVDD_SEL gpio state=1
+Jan 01 00:00:01.470       devb_sdmmc_bcm2712.57357                 slog   1800  sdhci_signal_voltage: switch 1.8V OK
+Jan 01 00:00:01.486       devb_sdmmc_bcm2712.57357                 slog   1800  SD CID:
+Jan 01 00:00:01.486       devb_sdmmc_bcm2712.57357                 slog   1800    MID 0x3, OID 0x5344, PNM SD32G
+Jan 01 00:00:01.486       devb_sdmmc_bcm2712.57357                 slog   1800    PRV 0x85, PSN 0x39feacb1, MDT 12-2025
+Jan 01 00:00:01.486       devb_sdmmc_bcm2712.57357                 slog   1800  SD CSD:
+Jan 01 00:00:01.486       devb_sdmmc_bcm2712.57357                 slog   1800    CSD_STRUCTURE 1, SPEC_VERS 0, CCC 0x5b5
+Jan 01 00:00:01.486       devb_sdmmc_bcm2712.57357                 slog   1800    TAAC 14, NSAC 0, TRAN_SPEED 50
+Jan 01 00:00:01.486       devb_sdmmc_bcm2712.57357                 slog   1800    C_SIZE 60872, C_SIZE_MULT 0
+Jan 01 00:00:01.486       devb_sdmmc_bcm2712.57357                 slog   1800    READ_BL_LEN 9, WRITE_BL_LEN 9
+Jan 01 00:00:01.486       devb_sdmmc_bcm2712.57357                 slog   1800    ERASE GRP_SIZE 0, GRP_MULT 0, SIZE 127
+Jan 01 00:00:01.486       devb_sdmmc_bcm2712.57357                 slog   1800    blksz 512, sectors 62333952, dtr 25000000
+Jan 01 00:00:01.486       devb_sdmmc_bcm2712.57357                 slog   1800  SD SW CAPS:
+Jan 01 00:00:01.486       devb_sdmmc_bcm2712.57357                 slog   1800    bus mode 0x1f, cmd sys 0x1
+Jan 01 00:00:01.486       devb_sdmmc_bcm2712.57357                 slog   1800    drv type 0xf, curr limit 0xf
+Jan 01 00:00:01.486       devb_sdmmc_bcm2712.57357                 slog   1800    dtr 50000000
+Jan 01 00:00:01.486       devb_sdmmc_bcm2712.57357                 slog   1800  CFG:  Timing SDR104, DTR 200000000, Bus Width 4 bit
+Jan 01 00:00:01.486       devb_sdmmc_bcm2712.57357                 slog   1800  Capabilites: HC HS UHS CMD23 
+Jan 01 00:00:01.486       devb_sdmmc_bcm2712.57357                 slog    100  (cam-disk.so) (Nov 20 2023 10:08:00)
+Jan 01 00:00:01.504               io_usb_otg.81934                 slog*     0  main(457)[tid:1]: io-usb-otg (Nov 20 2023 10:12:24) args: -v -d dwc3-xhci ioport=0x1f00200000,irq=0xbf,iosize=0x100000,bmstr=0x1000000000,ioport=0x1f00300000,irq=0xc4,iosize=0x100000,bmstr=0x1000000000 
+Jan 01 00:00:01.504               io_usb_otg.81934                 slog      0  xhci_init: Initialiaing with sever version: 2 
+Jan 01 00:00:01.505               io_usb_otg.81934                 slog      0  xhci_controller_init(2734): devu-hcd-dwc3-xhci.so (Dec  4 2025 13:38:56):  args 
+Jan 01 00:00:01.507               io_usb_otg.81934                 slog      8  usb_enum_port(94)[tid:1]: busno 0, parent -1, port 0, Super speed
+Jan 01 00:00:01.507               io_usb_otg.81934                 slog     11  usb_client_descriptor_get(198)[tid:1]: (type 1, index 0, length 8)
+Jan 01 00:00:01.507               io_usb_otg.81934                 slog     12  usb_device_set_address(245)[tid:1]: b:0 devno 0
+Jan 01 00:00:01.507               io_usb_otg.81934                 slog     11  usb_client_descriptor_get(198)[tid:1]: (type 1, index 0, length 18)
+Jan 01 00:00:01.507               io_usb_otg.81934                 slog     11  usb_client_descriptor_get(198)[tid:1]: (type 2, index 0, length 9)
+Jan 01 00:00:01.507               io_usb_otg.81934                 slog     11  usb_client_descriptor_get(198)[tid:1]: (type 2, index 0, length 31)
+Jan 01 00:00:01.507               io_usb_otg.81934                 slog      8  usb_enum_port(141)[tid:1]: vid 0x0000, did 0x0000 enumerated(busno 0, devno 0:0)
+Jan 01 00:00:01.507               io_usb_otg.81934                 slog     11  hub_state_inserted(569)[tid:1]: bdentry 0, dentry 0 0
+Jan 01 00:00:01.507               io_usb_otg.81934                 slog     13  hub_configuration_enable(263)[tid:1]: 1
+Jan 01 00:00:01.608               io_usb_otg.81934                 slog      0  xhci_init: Initialiaing with sever version: 2 
+Jan 01 00:00:01.608               io_usb_otg.81934                 slog      0  xhci_controller_init(2734): devu-hcd-dwc3-xhci.so (Dec  4 2025 13:38:56):  args 
+Jan 01 00:00:01.610               io_usb_otg.81934                 slog      8  usb_enum_port(94)[tid:1]: busno 1, parent -1, port 0, Super speed
+Jan 01 00:00:01.610               io_usb_otg.81934                 slog     11  usb_client_descriptor_get(198)[tid:1]: (type 1, index 0, length 8)
+Jan 01 00:00:01.610               io_usb_otg.81934                 slog     12  usb_device_set_address(245)[tid:1]: b:1 devno 0
+Jan 01 00:00:01.610               io_usb_otg.81934                 slog     11  usb_client_descriptor_get(198)[tid:1]: (type 1, index 0, length 18)
+Jan 01 00:00:01.610               io_usb_otg.81934                 slog     11  usb_client_descriptor_get(198)[tid:1]: (type 2, index 0, length 9)
+Jan 01 00:00:01.610               io_usb_otg.81934                 slog     11  usb_client_descriptor_get(198)[tid:1]: (type 2, index 0, length 31)
+Jan 01 00:00:01.610               io_usb_otg.81934                 slog      8  usb_enum_port(141)[tid:1]: vid 0x0000, did 0x0000 enumerated(busno 1, devno 0:1)
+Jan 01 00:00:01.610               io_usb_otg.81934                 slog     11  hub_state_inserted(569)[tid:1]: bdentry 0, dentry 0 0
+Jan 01 00:00:01.610               io_usb_otg.81934                 slog     13  hub_configuration_enable(263)[tid:1]: 1
+Jan 01 00:00:01.711               io_usb_otg.81934                 slog      0  usbh_timeout_init(204)[tid:1]: Complete
+Jan 01 00:00:01.918               io_usb_otg.81934                 slog      8  usb_enum_port_extract(172)[tid:7]: (busno 0, pdevno 0, portno 1)
+Jan 01 00:00:01.918               io_usb_otg.81934                 slog      8  usb_enum_port_extract(192)[tid:7]: status (2)
+Jan 01 00:00:01.918               io_usb_otg.81934                 slog      8  usb_enum_port_extract(172)[tid:7]: (busno 0, pdevno 0, portno 2)
+Jan 01 00:00:01.918               io_usb_otg.81934                 slog      8  usb_enum_port_extract(192)[tid:7]: status (2)
+Jan 01 00:00:01.918               io_usb_otg.81934                 slog      8  usb_enum_port_extract(172)[tid:7]: (busno 0, pdevno 0, portno 3)
+Jan 01 00:00:01.918               io_usb_otg.81934                 slog      8  usb_enum_port_extract(192)[tid:7]: status (2)
+Jan 01 00:00:02.125               io_usb_otg.81934                 slog      8  usb_enum_port_extract(172)[tid:7]: (busno 1, pdevno 0, portno 1)
+Jan 01 00:00:02.125               io_usb_otg.81934                 slog      8  usb_enum_port_extract(192)[tid:7]: status (2)
+Jan 01 00:00:02.125               io_usb_otg.81934                 slog      8  usb_enum_port_extract(172)[tid:7]: (busno 1, pdevno 0, portno 2)
+Jan 01 00:00:02.125               io_usb_otg.81934                 slog      8  usb_enum_port_extract(192)[tid:7]: status (2)
+Jan 01 00:00:02.125               io_usb_otg.81934                 slog      8  usb_enum_port_extract(172)[tid:7]: (busno 1, pdevno 0, portno 3)
+Jan 01 00:00:02.125               io_usb_otg.81934                 slog      8  usb_enum_port_extract(192)[tid:7]: status (2)
+Jan 01 00:00:04.547                 io_sock.147472          main_buffer*     1  io-sock -m phy -m fdt -d cgem -m usb -d axe -d axge -d cdce -d smsc 
+Jan 01 00:00:04.547                 io_sock.147472          main_buffer      1  io-sock fullpath: /sbin/io-sock
+Jan 01 00:00:04.547                 io_sock.147472          main_buffer      1  io-sock BuildID 118221426d88c69d642130807c363bb4
+Jan 01 00:00:04.547                 io_sock.147472          main_buffer      1  Copyright (c) 1992-2021 The FreeBSD Project.
+Jan 01 00:00:04.547                 io_sock.147472          main_buffer      1  Copyright (c) 1979, 1980, 1983, 1986, 1988, 1989, 1991, 1992, 1993, 1994
+Jan 01 00:00:04.547                 io_sock.147472          main_buffer      1  	The Regents of the University of California. All rights reserved.
+Jan 01 00:00:04.548                 io_sock.147472          main_buffer      1  FreeBSD is a registered trademark of The FreeBSD Foundation.
+Jan 01 00:00:04.548                 io_sock.147472          main_buffer      1  FreeBSD 13.5-RELEASE-p1 #0 n2105-925fe7e1e: Wed Jul 30 19:04:00 EDT 2025
+Jan 01 00:00:04.548                 io_sock.147472          main_buffer      1      root@docker-n5:/builds/workspace/QNXOS_803/build_aarch64/lib/io-sock/sys/target/aarch64-o.le
+Jan 01 00:00:04.548                 io_sock.147472          main_buffer      1  ntoaarch64-gcc (QNX8.0.0-rc240b01981e3f0ff1a5e1d2c93b54b9300381e44-102) 12.2.0
+Jan 01 00:00:04.554                 io_sock.147472          main_buffer      1  wlan: mac acl policy registered
+Jan 01 00:00:04.554                 io_sock.147472          main_buffer      1  armv8crypto0: <AES-CBC,AES-XTS,AES-GCM> on QNX
+Jan 01 00:00:04.554                 io_sock.147472          main_buffer      1  Event timer "QNX" frequency 1000 Hz quality 600
+Jan 01 00:00:04.554                 io_sock.147472          main_buffer      1  Timecounters tick every 1.000 msec
+Jan 01 00:00:04.554                 io_sock.147472          main_buffer      1  Timecounter "QNX" frequency 54000000 Hz quality 600
+Jan 01 00:00:04.572                 io_sock.147472          main_buffer     12  lo0: link state changed to UP
+Jan 01 00:00:04.572                 io_sock.147472          main_buffer      1  io-sock startup complete
+Jan 01 00:00:04.574                 io_sock.147472          main_buffer     22  mods-phy.so: loading module with ""
+Jan 01 00:00:04.575                 io_sock.147472          main_buffer     22  Library fullpath: /lib/dll/mods-phy.so
+Jan 01 00:00:04.575                 io_sock.147472          main_buffer     22  Library BuildID e8fde659d41b39704a624175e105b233
+Jan 01 00:00:04.575                 io_sock.147472          main_buffer     22  mods-phy.so: loaded
+Jan 01 00:00:04.575                 io_sock.147472          main_buffer     22  mods-fdt.so: loading module with ""
+Jan 01 00:00:04.576                 io_sock.147472          main_buffer     22  Library fullpath: /lib/dll/mods-fdt.so
+Jan 01 00:00:04.576                 io_sock.147472          main_buffer     22  Library BuildID 6e24c084745dad40e5a3e69f709e45a6
+Jan 01 00:00:04.577                  dhcpcd.151569                 slog*     0  <30>Jan 01 00:00:04 dhcpcd[151569-1]: dhcpcd-10.0.1 starting
+Jan 01 00:00:04.580                  dhcpcd.151569                 slog      0  <27>Jan 01 00:00:04 dhcpcd[155667-1]: no valid interfaces found
+Jan 01 00:00:04.595                 io_sock.147472          main_buffer     22  ofwbus0: <Open Firmware Device Tree> on QNX
+Jan 01 00:00:04.628                 io_sock.147472          main_buffer     22  simplebus0: <Flattened device tree simple bus> on ofwbus0
+Jan 01 00:00:04.649                 io_sock.147472          main_buffer     22  simplebus1: <Flattened device tree simple bus> on ofwbus0
+Jan 01 00:00:04.660                 io_sock.147472          main_buffer     22  pcib0: <BCM2712 PCIe host controller> mem 0x1000120000-0x100012930f irq 265,266 on simplebus1
+Jan 01 00:00:04.661                 io_sock.147472          main_buffer     22  simplebus2: <Flattened device tree simple bus> on pcib0
+Jan 01 00:00:04.682                 io_sock.147472          main_buffer     22  mods-fdt.so: loaded
+Jan 01 00:00:04.682                 io_sock.147472          main_buffer     22  mods-usb.so: loading module with ""
+Jan 01 00:00:04.682                 io_sock.147472          main_buffer     22  Library fullpath: /lib/dll/mods-usb.so
+Jan 01 00:00:04.682                 io_sock.147472          main_buffer     22  Library BuildID 2e3d555819bede5fef05d2ba4c378fe9
+Jan 01 00:00:04.685                 io_sock.147472          main_buffer     22  iousb0: <io-usb-otg> on QNX
+Jan 01 00:00:04.685               io_usb_otg.81934                 slog      0  usbdi_client_connect(62)[tid:5]: pid 147472 proc=io-sock 147472 usbdi_client 32a51c8e90
+Jan 01 00:00:04.685               io_usb_otg.81934                 slog      0  usbdi_resmgr_connect(313)[tid:5]: usbdi_resmgr_connect: pid 147472 usbdi_client 32a51c8e90 
+Jan 01 00:00:04.685                 io_sock.147472          main_buffer     22  iousb0: Initialize bus:0.  XHCI controller_type:1 state:1 ndev:0
+Jan 01 00:00:04.685                 io_sock.147472          main_buffer     22  uhub0: <QNX USB controller> on iousb0
+Jan 01 00:00:04.685                 io_sock.147472          main_buffer     22  iousb0: Initialize bus:1.  XHCI controller_type:1 state:1 ndev:0
+Jan 01 00:00:04.685                 io_sock.147472          main_buffer     22  uhub1: <QNX USB controller> on iousb0
+Jan 01 00:00:04.686               io_usb_otg.81934                 slog      0  usbdi_client_connect(62)[tid:5]: pid 147472 proc=io-sock 147472 usbdi_client 32a51cba60
+Jan 01 00:00:04.686               io_usb_otg.81934                 slog      0  usbdi_resmgr_connect(313)[tid:5]: usbdi_resmgr_connect: pid 147472 usbdi_client 32a51cba60 
+Jan 01 00:00:04.686                 io_sock.147472          main_buffer     22  mods-usb.so: loaded
+Jan 01 00:00:04.686                 io_sock.147472          main_buffer     22  devs-cgem.so: loading module with ""
+Jan 01 00:00:04.686                 io_sock.147472          main_buffer     22  Library fullpath: /lib/dll/devs-cgem.so
+Jan 01 00:00:04.686                 io_sock.147472          main_buffer     22  Library BuildID 62c4b72625f0e4e105dafa17ce322da2
+Jan 01 00:00:04.689                 io_sock.147472          main_buffer     22  cgem0: <Cadence CGEM Gigabit Ethernet Interface> mem 0xc040100000-0xc040103fff irq 20 on simplebus2
+Jan 01 00:00:04.689                 io_sock.147472          main_buffer     22  cgem0: is rpi5
+Jan 01 00:00:04.689                 io_sock.147472          main_buffer     22  cgem0: Cannot find valid physical address for shared mdio resource.
+Jan 01 00:00:04.689                 io_sock.147472          main_buffer     22  miibus0: <MII bus> on cgem0
+Jan 01 00:00:04.689                 io_sock.147472          main_buffer     22  brgphy0: <BCM54213PE 1000BASE-T media interface> PHY 1 on miibus0
+Jan 01 00:00:04.690                 io_sock.147472          main_buffer     22  brgphy0:  10baseT, 10baseT-FDX, 100baseTX, 100baseTX-FDX, 1000baseT-FDX, 1000baseT-FDX-master, auto
+Jan 01 00:00:04.691                 io_sock.147472          main_buffer     22  cgem0: Using defaults for TSO: 65518/35/2048
+Jan 01 00:00:04.691                 io_sock.147472          main_buffer     22  cgem0: added to devs-cgem.so
+Jan 01 00:00:04.691                 io_sock.147472          main_buffer     22  cgem0: Ethernet address: 88:a2:9e:bb:85:6b
+Jan 01 00:00:04.691                 io_sock.147472          main_buffer     12  cgem0: link state changed to DOWN
+Jan 01 00:00:04.692                 io_sock.147472          main_buffer     22  devs-cgem.so: loaded
+Jan 01 00:00:04.692                 io_sock.147472          main_buffer     22  devs-axe.so: loading module with ""
+Jan 01 00:00:04.692                 io_sock.147472          main_buffer     22  Library fullpath: /lib/dll/devs-axe.so
+Jan 01 00:00:04.692                 io_sock.147472          main_buffer     22  Library BuildID 7b6f2c956edea67040e6e0c543b63b83
+Jan 01 00:00:04.696                  dhcpcd.151569                 slog      0  <30>Jan 01 00:00:04 dhcpcd[155667-1]: cgem0: waiting for carrier
+Jan 01 00:00:04.696                 io_sock.147472          main_buffer     22  devs-axe.so: loaded
+Jan 01 00:00:04.696                 io_sock.147472          main_buffer     22  devs-axge.so: loading module with ""
+Jan 01 00:00:04.697                 io_sock.147472          main_buffer     22  Library fullpath: /lib/dll/devs-axge.so
+Jan 01 00:00:04.697                 io_sock.147472          main_buffer     22  Library BuildID 7ca2be220817a3ea7cbe47d45e26ed4a
+Jan 01 00:00:04.701                 io_sock.147472          main_buffer     22  devs-axge.so: loaded
+Jan 01 00:00:04.701                 io_sock.147472          main_buffer     22  devs-cdce.so: loading module with ""
+Jan 01 00:00:04.701                 io_sock.147472          main_buffer     22  Library fullpath: /lib/dll/devs-cdce.so
+Jan 01 00:00:04.701                 io_sock.147472          main_buffer     22  Library BuildID d135138ba86fb8dbb9eab02e03e08c91
+Jan 01 00:00:04.705                 io_sock.147472          main_buffer     22  devs-cdce.so: loaded
+Jan 01 00:00:04.705                 io_sock.147472          main_buffer     22  devs-smsc.so: loading module with ""
+Jan 01 00:00:04.705                 io_sock.147472          main_buffer     22  Library fullpath: /lib/dll/devs-smsc.so
+Jan 01 00:00:04.705                 io_sock.147472          main_buffer     22  Library BuildID fb029f48bb221dce7fd7f76f82e9cdef
+Jan 01 00:00:04.709                 io_sock.147472          main_buffer     22  devs-smsc.so: loaded
+Jan 01 00:00:05.949                 sshd.200724..0                 slog*     0  <38>Jan 01 00:00:05 sshd[200724-1]: Server listening on :: port 22.
+Jan 01 00:00:05.950                 sshd.200724..1                 slog*     0  <38>Jan 01 00:00:05 sshd[200724-1]: Server listening on 0.0.0.0 port 22.
+Jan 01 00:00:05.963                fan_rpi5.258070                 slog*     0  Started: PWM base: 0x1f0009c000
+Jan 01 00:00:07.709                 io_sock.147472          main_buffer     12  cgem0: link state changed to UP
+Jan 01 00:00:07.709                  dhcpcd.151569                 slog      0  <30>Jan 01 00:00:07 dhcpcd[155667-1]: cgem0: carrier acquired
+Jan 01 00:00:07.712                  dhcpcd.151569                 slog      0  <30>Jan 01 00:00:07 dhcpcd[155667-1]: DUID 00:01:00:01:c7:92:bc:87:88:a2:9e:bb:85:6b
+Jan 01 00:00:07.712                  dhcpcd.151569                 slog      0  <30>Jan 01 00:00:07 dhcpcd[155667-1]: cgem0: IAID 9e:bb:85:6b
+Jan 01 00:00:07.712                  dhcpcd.151569                 slog      0  <30>Jan 01 00:00:07 dhcpcd[155667-1]: cgem0: adding address fe80::411b:3320:2503:91a9
+Jan 01 00:00:07.715                 io_sock.147472          main_buffer     15  nd6_dad_timer: called with non-tentative address fe80:5::411b:3320:2503:91a9(cgem0)
+Jan 01 00:00:07.891                  dhcpcd.151569                 slog      0  <30>Jan 01 00:00:07 dhcpcd[155667-1]: cgem0: soliciting an IPv6 router
+Jan 01 00:00:09.147                  dhcpcd.151569                 slog      0  <30>Jan 01 00:00:09 dhcpcd[155667-1]: cgem0: soliciting a DHCP lease
+Jan 01 00:00:13.924                  dhcpcd.151569                 slog      0  <30>Jan 01 00:00:13 dhcpcd[155667-1]: cgem0: offered 192.168.50.54 from 192.168.50.1
+Jan 01 00:00:13.925                  dhcpcd.151569                 slog      0  <30>Jan 01 00:00:13 dhcpcd[155667-1]: cgem0: probing address 192.168.50.54/24
+Jan 01 00:00:18.904                  dhcpcd.151569                 slog      0  <30>Jan 01 00:00:18 dhcpcd[155667-1]: cgem0: leased 192.168.50.54 for 86400 seconds
+Jan 01 00:00:18.904                  dhcpcd.151569                 slog      0  <30>Jan 01 00:00:18 dhcpcd[155667-1]: cgem0: adding route to 192.168.50.0/24
+Jan 01 00:00:18.904                  dhcpcd.151569                 slog      0  <30>Jan 01 00:00:18 dhcpcd[155667-1]: cgem0: adding default route via 192.168.50.1
+Jan 01 00:00:18.926                  dhcpcd.151569                 slog      0  <27>Jan 01 00:00:18 dhcpcd[155667-1]: script_run: /sbin/dhcpcd-run-hooks: write on pipe with no reader
+Jan 01 00:00:19.116         sshd_session.356375..1                 slog*     0  <38>Jan 01 00:00:19 sshd-session[356375-1]: Connection closed by 192.168.50.43 port 46870 [preauth]
+Jan 01 00:00:19.894                  dhcpcd.151569                 slog      0  <28>Jan 01 00:00:19 dhcpcd[155667-1]: cgem0: no IPv6 Routers available
+Jan 01 00:00:32.464         sshd_session.368663..1                 slog*     0  <38>Jan 01 00:00:32 sshd-session[368663-1]: Accepted password for qnxuser from 192.168.50.43 port 46642 ssh2
+Jan 01 00:00:41.209                      su.397338                 slog*     0  <11>Jan 01 00:00:41 su: BAD SU to root: Authentication error

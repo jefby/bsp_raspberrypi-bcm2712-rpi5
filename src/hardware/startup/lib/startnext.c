@@ -49,6 +49,7 @@
 
 void
 startnext() {
+	///其中 first_bootstrap_start_vaddr 是从 IFS（Image FileSystem）加载的 procnto 内核的入口虚拟地址。
 	uintptr_t const eip = first_bootstrap_start_vaddr;
 
 	if(debug_flag) {
@@ -61,6 +62,8 @@ startnext() {
 	}
 
 	uefi_exit_boot_services();
-
+	///cpu_startnext它将系统页（syspage）传递给内核（通过 x0 寄存器），
+	///然后跳转到 procnto。内核接管后，启动程序的代码不再执行。
+	///eip寄存器存储着我们cpu要读取指令的地址
 	cpu_startnext(eip, 0);
 }
