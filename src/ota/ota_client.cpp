@@ -7,9 +7,15 @@
 #include <unistd.h>
 #include <thread>
 #include <chrono>
+#include <fcntl.h>
+#include <unistd.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include <curl/curl.h>
 
+
+#define mysleep(time_second) std::this_thread::sleep_for(std::chrono::seconds(time_second))
 // ==================== 配置结构体 ====================
 struct OTAConfig {
     std::string server_url;
@@ -117,23 +123,21 @@ int get_version() {
 }
 
 // 检查文件是否存在
-bool file_exists(const std::string& path) {
-    struct stat buffer;
-    return (stat(path.c_str(), &buffer) == 0);
+bool file_exists(const std::string& path)
+{
+    std::ifstream f(path.c_str());
+    return f.good();
 }
 
 // 获取文件大小
-off_t get_file_size(const std::string& path) {
-    struct stat buffer;
-    if (stat(path.c_str(), &buffer) == 0) {
-        return buffer.st_size;
-    }
-    return -1;
+size_t get_file_size(const std::string& path) {
+    std::ifstream f( path, std::ios::binary | std::ios::ate);
+    return f.tellg();
 }
 
 // 删除文件
 bool remove_file(const std::string& path) {
-    return (unlink(path.c_str()) == 0);
+    return std::remove(path.c_str()) == 0;
 }
 
 // 获取活跃的 IFS 名称
@@ -310,7 +314,7 @@ bool switch_ifs(const std::string& new_ifs) {
     config_file.close();
     
     log_msg("config.txt updated. System will reboot in 10 seconds.");
-    sleep(10);
+    mysleep(10);  // 等待 10 秒
     
     // 执行重启命令
     system("shutdown -r now");
@@ -333,7 +337,6 @@ bool update_version_file(int version) {
 }
 
 // ==================== OTA 主循环 ====================
-
 void ota_loop() {
     log_msg("OTA Client started");
     log_msg("Server: " + g_config.server_url);
@@ -351,7 +354,7 @@ void ota_loop() {
             
             if (server_version < 0) {
                 log_msg("Failed to get server version, will retry");
-                sleep(g_config.check_interval);
+                mysleep(g_config.check_interval);
                 continue;
             }
             
@@ -392,16 +395,21 @@ void ota_loop() {
                 }
             }
             
-            sleep(g_config.check_interval);
+            mysleep(g_config.check_interval);
         }
         catch (const std::exception& e) {
             log_msg("Exception in OTA loop: " + std::string(e.what()));
-            sleep(g_config.check_interval);
+            mysleep(g_config.check_interval);
         }
     }
 }
 
 // ==================== 主函数 ====================
+void ota_worker()
+{
+    // 运行 OTA 循环
+    ota_loop();
+}
 
 int main(int argc, char* argv[]) {
     // 设置默认配置
@@ -438,23 +446,11 @@ int main(int argc, char* argv[]) {
         return 1;
     }
     
-    // 后台运行
-    if (daemonize) {
-        pid_t pid = fork();
-        if (pid < 0) {
-            perror("fork() failed");
-            return 1;
-        }
-        if (pid > 0) {
-            // 父进程退出
-            return 0;
-        }
-        // 子进程继续
-        setsid();
-    }
-    
-    // 运行 OTA 循环
-    ota_loop();
-    
+    std::thread t(ota_worker);
+
+    // 主线程负责 signal / watchdog
+    t.join();
+
+    log_msg("OTA Client exiting");
     return 0;
 }

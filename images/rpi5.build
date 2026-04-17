@@ -927,7 +927,7 @@ echo 200 > /dev/fan
 }
 
 /etc/ota_config = {
-OTA_SERVER=http://192.168.1.100:8080
+OTA_SERVER=http://192.168.50.148:8080
 OTA_CHECK_INTERVAL=300
 OTA_ENABLED=1
 BOOT_PATH=/proc/boot

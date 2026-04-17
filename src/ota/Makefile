@@ -4,12 +4,11 @@ SRCDIR  := .
 OBJDIR  := obj
 BINDIR  := bin
 
-# Compiler and flags
-CC      := qcc -Vgcc_ntoaarch64
-CXX     := qcc -Vgcc_ntoaarch64
-CFLAGS  := -Wall -Wextra -O2 -fPIC
-CXXFLAGS:= $(CFLAGS) -std=c++11
-LDFLAGS := -lcurl
+CXX := qcc -Vgcc_ntoaarch64le_cxx
+
+CXXFLAGS := -Wall -Wextra -O2 -std=c++11 -fPIC
+
+LDFLAGS := -lcurl -lsocket  -lssl -lcrypto -lz -lc++
 
 # Source files
 SOURCES := $(SRCDIR)/ota_client.cpp
@@ -41,4 +40,6 @@ install: $(TARGET)
 	mkdir -p ../../../install/aarch64/usr/bin
 	cp $(TARGET) ../../../install/aarch64/usr/bin/
 
-.PHONY: all clean install
+hinstall: install
+
+.PHONY: all clean install hinstall
