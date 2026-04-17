@@ -13,7 +13,10 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <curl/curl.h>
-
+#include <sys/mount.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <cstdio>
 
 #define mysleep(time_second) std::this_thread::sleep_for(std::chrono::seconds(time_second))
 // ==================== 配置结构体 ====================
@@ -65,9 +68,9 @@ bool read_config(const std::string& config_path) {
         g_config.server_url = "http://192.168.50.148:8080";
         g_config.check_interval = 300;
         g_config.enabled = true;
-        g_config.boot_path = "/proc/boot";
+        g_config.boot_path = "/var/boot";
         g_config.version_file = "/etc/ota_version";
-        g_config.config_file = "/proc/boot/config.txt";
+        g_config.config_file = "/var/boot/config.txt";
         g_config.log_file = "/tmp/ota_client.log";
         return true;
     }
@@ -411,14 +414,53 @@ void ota_worker()
     ota_loop();
 }
 
+bool is_mounted(const std::string& mount_point)
+{
+    std::ifstream ifs("/proc/mounts");
+    std::string line;
+
+    while (std::getline(ifs, line)) {
+        if (line.find(mount_point) != std::string::npos)
+            return true;
+    }
+    return false;
+}
+
+bool ensure_boot_mounted()
+{
+    const char* mount_point = "/var/boot";
+    const char* dev = "/dev/sd0t12";
+
+    // 1. 创建目录（如果不存在）
+    mkdir(mount_point, 0755);
+
+    // 2. 尝试挂载
+    if (mount(dev, mount_point, _MOUNT_FSYS, "dos", NULL, 0) != 0) {
+        perror("mount failed");
+        return false;
+    }
+
+    return true;
+}
+
 int main(int argc, char* argv[]) {
+    // 确保 /var/boot 已挂载
+    if (!is_mounted("/var/boot"))
+    {
+        if (!ensure_boot_mounted())
+        {
+            std::cerr << "Failed to mount /var/boot, exiting" << std::endl;
+            return 1;
+        }
+    }
+
     // 设置默认配置
     g_config.server_url = "http://192.168.50.148:8080";
     g_config.check_interval = 300;
     g_config.enabled = true;
-    g_config.boot_path = "/proc/boot";
+    g_config.boot_path = "/var/boot";
     g_config.version_file = "/etc/ota_version";
-    g_config.config_file = "/proc/boot/config.txt";
+    g_config.config_file = "/var/boot/config.txt";
     g_config.log_file = "/tmp/ota_client.log";
     
     // 解析命令行参数
