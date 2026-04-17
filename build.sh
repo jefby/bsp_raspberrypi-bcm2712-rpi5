@@ -29,6 +29,11 @@ make install
 cd ../..
 echo "OTA client build completed."
 
+
+cd images/
+cp ifs-rpi5.bin ifs-rpi5_B.bin
+cd ../
+
 END_TIME=$(date +%s)
 ELAPSED_TIME=$((END_TIME - START_TIME))
 echo "Build time: $ELAPSED_TIME seconds"
