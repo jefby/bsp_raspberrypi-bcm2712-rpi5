@@ -19,6 +19,16 @@ if $CLEAN_BUILD; then
 fi
 
 make || { echo "Build failed!"; exit 1; }
+
+# 编译 OTA 客户端
+echo "Building OTA client..."
+cd src/ota
+make clean
+make
+make install
+cd ../..
+echo "OTA client build completed."
+
 END_TIME=$(date +%s)
 ELAPSED_TIME=$((END_TIME - START_TIME))
 echo "Build time: $ELAPSED_TIME seconds"

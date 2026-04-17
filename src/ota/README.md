@@ -105,7 +105,7 @@ OTA 客户端通过 `/etc/ota_config` 文件进行配置。可配置参数：
 
 ```bash
 # OTA 服务器地址
-OTA_SERVER=http://192.168.1.100:8080
+OTA_SERVER=http://192.168.50.148:8080
 
 # 检查更新的间隔时间（秒）
 OTA_CHECK_INTERVAL=300
@@ -206,10 +206,10 @@ cat /etc/ota_config
 
 ```bash
 # 测试网络连接
-ping 192.168.1.100
+ping 192.168.50.148
 
 # 测试 HTTP 访问
-curl http://192.168.1.100:8080/version.txt
+curl http://192.168.50.148:8080/version.txt
 
 # 检查防火墙
 iptables -L -n

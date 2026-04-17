@@ -56,7 +56,7 @@ cat /etc/ota_version
 grep "kernel=" /proc/boot/config.txt
 
 # 测试服务器连接
-curl http://192.168.1.100:8080/version.txt
+curl http://192.168.50.148:8080/version.txt
 ```
 
 ## 常用命令

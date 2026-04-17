@@ -56,7 +56,7 @@ bool read_config(const std::string& config_path) {
     if (!file.is_open()) {
         log_msg("Failed to open config file: " + config_path);
         // 使用默认配置
-        g_config.server_url = "http://192.168.1.100:8080";
+        g_config.server_url = "http://192.168.50.148:8080";
         g_config.check_interval = 300;
         g_config.enabled = true;
         g_config.boot_path = "/proc/boot";
@@ -405,7 +405,7 @@ void ota_loop() {
 
 int main(int argc, char* argv[]) {
     // 设置默认配置
-    g_config.server_url = "http://192.168.1.100:8080";
+    g_config.server_url = "http://192.168.50.148:8080";
     g_config.check_interval = 300;
     g_config.enabled = true;
     g_config.boot_path = "/proc/boot";
