@@ -40,6 +40,6 @@ install: $(TARGET)
 	mkdir -p ../../../install/aarch64/usr/bin
 	cp $(TARGET) ../../../install/aarch64/usr/bin/
 
-hinstall: install
+hinstall: clean
 
 .PHONY: all clean install hinstall

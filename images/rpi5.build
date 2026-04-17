@@ -920,7 +920,7 @@ echo 200 > /dev/fan
 ################################################################################################
 ## OTA Client (Over-The-Air Update)
 ################################################################################################
-[search=../install/${PROCESSOR}/usr/bin${PFS}${QNX_TARGET}/${PROCESSOR}/usr/bin uid=0 gid=0 perms=0755] /usr/bin/ota_client=ota_client
+[search=../install/${PROCESSOR}/usr/bin${PFS}${QNX_TARGET}/${PROCESSOR}/usr/bin uid=0 gid=0 perms=0755] /usr/bin/ota_client=../src/ota/bin/ota_client
 
 /etc/ota_version = {
 1
