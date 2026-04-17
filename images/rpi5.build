@@ -123,6 +123,7 @@
 [type=link] /dev/console=/dev/ser10
 [type=link] /var/log=/tmp
 [type=link] /usr/tmp=/tmp
+/etc/version.txt=../version.txt
 
 
 ################################################################################################

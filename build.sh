@@ -13,6 +13,11 @@ cd ~/qnx800
 source qnxsdp-env.sh
 cd $SRC_DIR
 
+COMMIT_HASH=$(git rev-parse --short HEAD)
+echo "Build commit: $COMMIT_HASH"  >> version.txt
+BUILD_TIME=`date +"%Y-%m-%d %H:%M:%S" `
+echo "Build time: $BUILD_TIME"  >> version.txt
+
 if $CLEAN_BUILD; then
     echo "Performing clean build..."
     make clean || { echo "Clean failed!"; exit 1; }
