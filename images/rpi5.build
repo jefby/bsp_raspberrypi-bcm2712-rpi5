@@ -285,7 +285,7 @@ fi
 [uid=0 gid=0 perms=0755] /usr/bin/scp=scp
 [uid=0 gid=0 perms=0755] /usr/bin/ssh=ssh
 [uid=0 gid=0 perms=0755] /usr/bin/ssh-keygen=ssh-keygen
-
+[type=file] /etc/resolv.conf=../resolv.conf
 [type=link] /etc/ssh = /dev/shmem
 /dev/shmem/sshd_config=${QNX_TARGET}/etc/ssh/sshd_config
 
@@ -316,8 +316,7 @@ fi
     /usr/sbin/sshd
 
 }
-# 在 buildfile 里
-[type=file] /etc/resolv.conf = { nameserver 223.5.5.5\n }
+
 
 
 ################################################################################################
