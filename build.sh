@@ -13,9 +13,11 @@ cd ~/qnx800
 source qnxsdp-env.sh
 cd $SRC_DIR
 
+# 生成构建信息
 COMMIT_HASH=$(git rev-parse --short HEAD)
-echo "Build commit: $COMMIT_HASH"  >> build_info.txt
-BUILD_TIME=`date +"%Y-%m-%d %H:%M:%S" `
+echo "Build commit: $COMMIT_HASH"  > build_info.txt
+# BUILD_TIME=`date +"%Y-%m-%d %H:%M:%S"`
+BUILD_TIME=`date`
 echo "Build time: $BUILD_TIME"  >> build_info.txt
 
 if $CLEAN_BUILD; then

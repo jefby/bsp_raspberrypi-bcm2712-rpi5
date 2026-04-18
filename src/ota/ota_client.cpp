@@ -313,7 +313,6 @@ bool switch_ifs(const std::string& new_ifs) {
         log_msg("Failed to open config file for writing: " + g_config.config_file);
         return false;
     }
-    
     config_file << "kernel=" << new_ifs << std::endl;
     config_file.close();
     
@@ -321,7 +320,7 @@ bool switch_ifs(const std::string& new_ifs) {
     mysleep(10);  // 等待 10 秒
     
     // 执行重启命令
-    system("shutdown -r now");
+    system("shutdown -v");
     return true;
 }
 
