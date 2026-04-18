@@ -317,12 +317,6 @@ fi
 
 }
 
-/etc/resolv.conf={
-    nameserver 114.114.114.114
-    nameserver 1.1.1.1
-    nameserver 223.5.5.5
-}
-
 
 ################################################################################################
 ## USB host drivers
@@ -820,6 +814,18 @@ net_start.sh = {
 # config ETH_RST_N/GPIO32 pin
 gpio-rp1 set 32 op pd dh
 
+
+############################################################################################
+## 把 /etc 迁移到 tmpfs（使其可写，供 dhcpcd hook 写入 resolv.conf）
+############################################################################################
+TMPETC=/tmp/.etc_backup
+mkdir -p $TMPETC
+cp -rp /etc/. $TMPETC/
+mount -t tmpfs -o size=2m tmpfs /etc
+cp -rp $TMPETC/. /etc/
+rm -rf $TMPETC
+echo "Mounted /etc as tmpfs, contents restored."
+
 ############################################################################################
 ## Network driver
 ############################################################################################
@@ -828,6 +834,14 @@ io-sock -m phy -m fdt -d cgem -m usb -d axe -d axge -d cdce -d smsc
 
 echo "Starting DHCP client ..."
 dhcpcd -bqq
+
+# 等待 resolv.conf 被 hook 写入（最多等10秒）
+i=0
+while [ ! -s /etc/resolv.conf ] && [ $i -lt 10 ]; do
+    sleep 1
+    i=$((i+1))
+done
+echo "resolv.conf ready: $(cat /etc/resolv.conf)"
 
 # Run wpa_supplicant with configuration file /etc/system/config/wpa_supplicant.conf
 # to connect to WiFi network
