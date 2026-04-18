@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # 检查是否传递了 --clean 参数
-CLEAN_BUILD=false
-if [[ "$1" == "--clean" ]]; then
-    CLEAN_BUILD=true
-fi
+CLEAN_BUILD=true
+# if [[ "$1" == "--clean" ]]; then
+#     CLEAN_BUILD=true
+# fi
 START_TIME=$(date +%s)
 SRC_DIR=$(pwd)
 echo "Building QNX Neutrino RTOS for Raspberry Pi 5"
