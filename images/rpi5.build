@@ -106,6 +106,8 @@
     ksh /proc/boot/fan_start.sh
     ksh /proc/boot/fan_control.sh &
 
+    # start time sync
+    ksh /proc/boot/time_sync.sh &
 
     ############################################################################################
     ## Start the main shell
@@ -253,6 +255,7 @@ fi
 /usr/sbin/ip6addrctl=ip6addrctl
 /usr/sbin/ndp=ndp
 /usr/sbin/tcpdump=tcpdump
+/usr/sbin/ntpdate=ntpdate
 [uid=0 gid=0 perms=4755] /usr/sbin/traceroute=traceroute
 [uid=0 gid=0 perms=4755] /usr/sbin/traceroute6=traceroute6
 
@@ -733,6 +736,8 @@ export PCI_DEBUG_MODULE=/lib/dll/pci/pci_debug2.so
 export PCI_SLOG_MODULE=/lib/dll/pci/pci_slog2.so
 export PCI_BKWD_COMPAT_MODULE=/lib/dll/pci/pci_bkwd_compat.so
 export PCI_HW_CONFIG_FILE=/etc/system/config/pci/pci_hw-bcm2712-rpi5.cfg
+# set timezone to china
+export TZ=CST-8
 }
 
 
@@ -839,6 +844,7 @@ dhcpcd -bqq
 echo "Starting OTA client ..."
 /usr/bin/ota_client -c /etc/ota_config -d >> /tmp/ota_client.log 2>&1 &
 
+
 ############################################################################################
 ## REMOTE_DEBUG: gdb or Momentics
 ##  - refer to the help documentation for the gdb, qconn and the IDE
@@ -919,6 +925,10 @@ echo 200 > /dev/fan
 ## Fan control script
 ################################################################################################
 /proc/boot/fan_control.sh=../prebuilt/fan_control.sh
+
+########################################
+### Time Sync
+/proc/boot/time_sync.sh=../prebuilt/time_sync.sh
 
 ################################################################################################
 ## OTA Client (Over-The-Air Update)
