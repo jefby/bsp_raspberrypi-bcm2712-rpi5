@@ -23,18 +23,19 @@ if $CLEAN_BUILD; then
     make clean || { echo "Clean failed!"; exit 1; }
 fi
 
-make || { echo "Build failed!"; exit 1; }
-
 # 编译 OTA 客户端
 echo "Building OTA client..."
-cd src/ota
+cd $SRC_DIR/src/ota
 make clean
 make
 make install
-cd ../..
 echo "OTA client build completed."
 
+cd $SRC_DIR
+# 创建 IFS 镜像
+make || { echo "Build failed!"; exit 1; }
 
+# 复制 IFS 镜像
 cd images/
 cp ifs-rpi5.bin ifs-rpi5_B.bin
 cd ../

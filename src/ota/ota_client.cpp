@@ -325,21 +325,6 @@ bool switch_ifs(const std::string& new_ifs) {
     return true;
 }
 
-// ==================== 更新版本文件 ====================
-
-bool update_version_file(int version) {
-    std::ofstream file(g_config.version_file);
-    if (!file.is_open()) {
-        log_msg("Failed to update version file: " + g_config.version_file);
-        return false;
-    }
-    
-    file << version << std::endl;
-    file.close();
-    log_msg("Version file updated to: " + std::to_string(version));
-    return true;
-}
-
 // ==================== OTA 主循环 ====================
 void ota_loop() {
     log_msg("OTA Client started");
@@ -383,15 +368,14 @@ void ota_loop() {
                 // 下载
                 if (download_file(download_url, target_path)) {
                     // 验证
-                    if (verify_ifs(target_path)) {
-                        // 更新版本文件，在ifs里面，不需要更新版本文件了，直接切换即可
-                        // if (update_version_file(server_version)) 
-                        {
-                            // 切换并重启
-                            switch_ifs(target_ifs);
-                            break;  // 重启后不会执行到这里
-                        }
-                    } else {
+                    if (verify_ifs(target_path))
+                    {
+                        // 切换并重启
+                        switch_ifs(target_ifs);
+                        break; // 重启后不会执行到这里
+                    }
+                    else
+                    {
                         log_msg("Verification failed, skipping update");
                         remove_file(target_path);
                     }
