@@ -384,8 +384,9 @@ void ota_loop() {
                 if (download_file(download_url, target_path)) {
                     // 验证
                     if (verify_ifs(target_path)) {
-                        // 更新版本文件
-                        if (update_version_file(server_version)) {
+                        // 更新版本文件，在ifs里面，不需要更新版本文件了，直接切换即可
+                        // if (update_version_file(server_version)) 
+                        {
                             // 切换并重启
                             switch_ifs(target_ifs);
                             break;  // 重启后不会执行到这里
@@ -417,9 +418,9 @@ void ota_worker()
 
 bool is_mounted(const std::string& mount_point)
 {
-    std::ifstream ifs("/proc/mounts");
     std::string line;
-
+    system("/bin/mount > /tmp/mounts");  // 刷新挂载信息
+    std::ifstream ifs("/tmp/mounts");    
     while (std::getline(ifs, line)) {
         if (line.find(mount_point) != std::string::npos)
             return true;
