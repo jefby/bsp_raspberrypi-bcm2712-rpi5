@@ -52,10 +52,11 @@ startnext() {
 	///其中 first_bootstrap_start_vaddr 是从 IFS（Image FileSystem）加载的 procnto 内核的入口虚拟地址。
 	uintptr_t const eip = first_bootstrap_start_vaddr;
 
-	if(debug_flag) {
-		kprintf("\nSystem page at phys:%P user:%v kern:%v\n", (paddr_t)syspage_paddr,
+	//if(debug_flag)
+	{
+		kprintf("\njefby System page at phys:%P user:%v kern:%v\n", (paddr_t)syspage_paddr,
 			lsp.system_private.p->user_syspageptr, lsp.system_private.p->kern_syspageptr);
-		kprintf("Starting next program at v%v\n", eip);
+		kprintf("jefby Starting next program at v%v\n", eip);
 	}
 	if(eip == ~(uintptr_t)0) {
 		crash("No next program to start\n");
