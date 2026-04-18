@@ -285,7 +285,7 @@ fi
 [uid=0 gid=0 perms=0755] /usr/bin/scp=scp
 [uid=0 gid=0 perms=0755] /usr/bin/ssh=ssh
 [uid=0 gid=0 perms=0755] /usr/bin/ssh-keygen=ssh-keygen
-[type=file] /etc/resolv.conf=../resolv.conf
+[type=file] /etc/resolv.conf=../prebuilt/resolv.conf
 [type=link] /etc/ssh = /dev/shmem
 /dev/shmem/sshd_config=${QNX_TARGET}/etc/ssh/sshd_config
 
@@ -918,7 +918,7 @@ echo 200 > /dev/fan
 ################################################################################################
 ## Fan control script
 ################################################################################################
-/proc/boot/fan_control.sh=../fan_control.sh
+/proc/boot/fan_control.sh=../prebuilt/fan_control.sh
 
 ################################################################################################
 ## OTA Client (Over-The-Air Update)

@@ -25,3 +25,4 @@ src/hardware/support/bcm2712/mbox/aarch64/le/mbox-bcm
 src/hardware/support/bcm2712/msix-rp1/aarch64/le/msix-rp1
 src/hardware/support/wdtkick/aarch64/le/wdtkick
 src/ota/bin/
+*local*
