@@ -604,7 +604,6 @@ ldqnx-64.so.2=ldqnx-64.so.2
 /usr/bin/setconf=setconf
 /usr/bin/top=top
 /usr/bin/use=use
-/usr/bin/uptime=uptime
 
 /usr/sbin/dumper=dumper
 /usr/sbin/random=random
@@ -930,7 +929,7 @@ echo 200 > /dev/fan
 ########################################
 ### Time Sync
 /proc/boot/time_sync.sh=../prebuilt/time_sync.sh
-
+/proc/boot/uptime=../prebuilt/uptime
 ################################################################################################
 ## OTA Client (Over-The-Air Update)
 ################################################################################################
