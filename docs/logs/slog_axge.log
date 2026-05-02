@@ -1,0 +1,12 @@
+May 02 21:09:51.737                  dhcpcd.151569                 slog      0  <30>May 02 21:09:51 dhcpcd[155667-1]: axge0: removing interface
+May 02 21:09:51.737                 io_sock.147472          main_buffer     32  axge0: scheduled for removal
+May 02 21:09:51.737                 io_sock.147472          main_buffer     32  axge0: removed from devs-axge.so
+May 02 21:09:51.737                 io_sock.147472          main_buffer     32  axge0: detached
+May 02 21:09:54.487                 io_sock.147472          main_buffer     32  axge0 on uhub1
+May 02 21:09:54.487                 io_sock.147472          main_buffer     32  axge0: <Unknown , rev 3.00/1.00, addr 1> on uhub1
+May 02 21:09:54.850                 io_sock.147472          main_buffer     22  miibus1: <MII bus> on axge0
+May 02 21:09:54.858                 io_sock.147472          main_buffer     22  axge0: <USB Ethernet> on axge0
+May 02 21:09:54.859                 io_sock.147472          main_buffer     22  axge0: added to devs-axge.so
+May 02 21:09:54.859                 io_sock.147472          main_buffer     22  axge0: Ethernet address: 00:24:27:fe:8c:e2
+May 02 21:09:54.860                 io_sock.147472          main_buffer     12  axge0: link state changed to DOWN
+May 02 21:09:55.276                  dhcpcd.151569                 slog      0  <30>May 02 21:09:55 dhcpcd[155667-1]: axge0: waiting for carrier
