@@ -824,7 +824,10 @@ gpio-rp1 set 32 op pd dh
 ## Network driver
 ############################################################################################
 echo "Starting networking ..."
-io-sock -m phy -m fdt -d cgem -m usb -d axe -d axge -d cdce -d smsc 
+# disable axge driver to debug
+io-sock -m phy -m fdt -d cgem -m usb -d axe -d cdce -d smsc
+
+#io-sock -m phy -m fdt -d cgem -m usb -d axe -d axge -d cdce -d smsc
 
 echo "Starting DHCP client ..."
 dhcpcd -bqq
