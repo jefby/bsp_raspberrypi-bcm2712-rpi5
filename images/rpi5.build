@@ -198,7 +198,7 @@ fi
 /lib/dll/devs-igc.so=devs-igc.so
 
 /lib/dll/devs-axe.so=devs-axe.so
-/lib/dll/devs-axge.so=devs-axge.so
+/lib/dll/devs-axge.so=../prebuilt/devs-axge.so
 /lib/dll/devs-cdce.so=devs-cdce.so
 /lib/dll/devs-smsc.so=devs-smsc.so
 
@@ -825,9 +825,9 @@ gpio-rp1 set 32 op pd dh
 ############################################################################################
 echo "Starting networking ..."
 # disable axge driver to debug
-io-sock -m phy -m fdt -d cgem -m usb -d axe -d cdce -d smsc
-
-#io-sock -m phy -m fdt -d cgem -m usb -d axe -d axge -d cdce -d smsc
+#io-sock -m phy -m fdt -d cgem -m usb -d axe -d cdce -d smsc
+# original driver
+io-sock -m phy -m fdt -d cgem -m usb -d axe -d axge -d cdce -d smsc
 
 echo "Starting DHCP client ..."
 dhcpcd -bqq
