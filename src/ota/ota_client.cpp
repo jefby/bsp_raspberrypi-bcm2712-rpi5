@@ -127,8 +127,8 @@ bool read_config(const std::string& config_path) {
             g_config.enabled = (value == "1");
         } else if (key == "BOOT_PATH") {
             g_config.boot_path = value;
-        } else if (key == "VERSION_FILE") {
-            g_config.version_file = value;
+            // version_file 固定跟随 boot_path，不单独配置
+            g_config.version_file = value + "/ota_version";
         } else if (key == "CONFIG_FILE") {
             g_config.config_file = value;
         } else if (key == "LOG_FILE") {
@@ -159,26 +159,12 @@ std::string get_version() {
     return version;
 }
 
-// 写入版本号到本地版本文件
-// /var/boot 为持久可写分区，/etc/ 在 QNX IFS 中为只读
+// 写入版本号，version_file 固定在 boot_path 下，始终可写
 bool write_version(const std::string& version) {
     std::ofstream file(g_config.version_file);
     if (!file.is_open()) {
-        // fallback：尝试写到 /var/boot/ota_version
-        const std::string fallback = "/var/boot/ota_version";
-        if (g_config.version_file == fallback) {
-            log_msg("Failed to write version file: " + g_config.version_file);
-            return false;
-        }
-        log_msg("Cannot write " + g_config.version_file + ", falling back to " + fallback);
-        std::ofstream fb(fallback);
-        if (!fb.is_open()) {
-            log_msg("Failed to write version file: " + fallback);
-            return false;
-        }
-        fb << version << std::endl;
-        g_config.version_file = fallback;
-        return true;
+        log_msg("Failed to write version file: " + g_config.version_file);
+        return false;
     }
     file << version << std::endl;
     return true;
@@ -572,7 +558,7 @@ int main(int argc, char* argv[]) {
     g_config.check_interval  = 300;
     g_config.enabled         = true;
     g_config.boot_path       = "/var/boot";
-    g_config.version_file    = "/var/boot/ota_version";
+    g_config.version_file    = g_config.boot_path + "/ota_version";
     g_config.config_file     = "/var/boot/config.txt";
     g_config.log_file        = "/tmp/ota_client.log";
     g_config.ota_config_path = "/etc/ota_config";
