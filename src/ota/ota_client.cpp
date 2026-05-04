@@ -160,14 +160,27 @@ std::string get_version() {
 }
 
 // 写入版本号到本地版本文件
+// /var/boot 为持久可写分区，/etc/ 在 QNX IFS 中为只读
 bool write_version(const std::string& version) {
     std::ofstream file(g_config.version_file);
     if (!file.is_open()) {
-        log_msg("Failed to write version file: " + g_config.version_file);
-        return false;
+        // fallback：尝试写到 /var/boot/ota_version
+        const std::string fallback = "/var/boot/ota_version";
+        if (g_config.version_file == fallback) {
+            log_msg("Failed to write version file: " + g_config.version_file);
+            return false;
+        }
+        log_msg("Cannot write " + g_config.version_file + ", falling back to " + fallback);
+        std::ofstream fb(fallback);
+        if (!fb.is_open()) {
+            log_msg("Failed to write version file: " + fallback);
+            return false;
+        }
+        fb << version << std::endl;
+        g_config.version_file = fallback;
+        return true;
     }
     file << version << std::endl;
-    file.close();
     return true;
 }
 
@@ -559,7 +572,7 @@ int main(int argc, char* argv[]) {
     g_config.check_interval  = 300;
     g_config.enabled         = true;
     g_config.boot_path       = "/var/boot";
-    g_config.version_file    = "/etc/ota_version";
+    g_config.version_file    = "/var/boot/ota_version";
     g_config.config_file     = "/var/boot/config.txt";
     g_config.log_file        = "/tmp/ota_client.log";
     g_config.ota_config_path = "/etc/ota_config";
