@@ -14,6 +14,7 @@
 #include <sys/types.h>
 #include <sys/mount.h>
 #include <curl/curl.h>
+#include <openssl/evp.h>
 
 #define mysleep(time_second) std::this_thread::sleep_for(std::chrono::seconds(time_second))
 
@@ -294,6 +295,69 @@ bool download_file(const std::string& url, const std::string& dest_file) {
 
 // ==================== 验证函数 ====================
 
+// 计算文件的 SHA256，返回小写十六进制字符串，失败返回空串
+static std::string compute_sha256(const std::string& file_path) {
+    FILE* fp = fopen(file_path.c_str(), "rb");
+    if (!fp) return "";
+
+    EVP_MD_CTX* ctx = EVP_MD_CTX_new();
+    if (!ctx) { fclose(fp); return ""; }
+
+    EVP_DigestInit_ex(ctx, EVP_sha256(), nullptr);
+
+    unsigned char buf[65536];
+    size_t n;
+    while ((n = fread(buf, 1, sizeof(buf), fp)) > 0)
+        EVP_DigestUpdate(ctx, buf, n);
+    fclose(fp);
+
+    unsigned char hash[EVP_MAX_MD_SIZE];
+    unsigned int hash_len = 0;
+    EVP_DigestFinal_ex(ctx, hash, &hash_len);
+    EVP_MD_CTX_free(ctx);
+
+    char hex[EVP_MAX_MD_SIZE * 2 + 1] = {};
+    for (unsigned int i = 0; i < hash_len; ++i)
+        snprintf(hex + i * 2, 3, "%02x", hash[i]);
+    return std::string(hex);
+}
+
+// 下载 .sha256 伴生文件并与本地文件哈希对比
+// 伴生文件内容支持两种格式：纯哈希 或 "hash  filename"（sha256sum 输出）
+bool verify_sha256(const std::string& file_path, const std::string& sha256_url) {
+    log_msg("Downloading SHA256: " + sha256_url);
+    std::string remote;
+    if (!curl_get(sha256_url, remote)) {
+        log_msg("Failed to download SHA256 sidecar");
+        return false;
+    }
+
+    // 只取第一个空格前的部分（兼容 sha256sum 输出格式）
+    remote.erase(0, remote.find_first_not_of(" \t\r\n"));
+    size_t sp = remote.find(' ');
+    if (sp != std::string::npos) remote = remote.substr(0, sp);
+    remote.erase(remote.find_last_not_of(" \t\r\n") + 1);
+
+    if (remote.size() != 64) {
+        log_msg("Invalid SHA256 from server: " + remote);
+        return false;
+    }
+
+    std::string actual = compute_sha256(file_path);
+    if (actual.empty()) {
+        log_msg("SHA256 computation failed for: " + file_path);
+        return false;
+    }
+
+    if (actual != remote) {
+        log_msg("SHA256 mismatch! expected=" + remote + " actual=" + actual);
+        return false;
+    }
+
+    log_msg("SHA256 OK: " + actual);
+    return true;
+}
+
 bool verify_ifs(const std::string& file_path) {
     log_msg("Verifying IFS file: " + file_path);
 
@@ -491,7 +555,15 @@ void ota_loop() {
                 log_msg("Target IFS: " + target_ifs);
                 log_msg("Download URL: " + download_url);
 
+                std::string sha256_url = download_url + ".sha256";
+
                 if (download_file(download_url, target_path)) {
+                    if (!verify_sha256(target_path, sha256_url)) {
+                        log_msg("SHA256 verification failed, aborting update");
+                        remove_file(target_path);
+                        mysleep(g_config.check_interval);
+                        continue;
+                    }
                     if (verify_ifs(target_path)) {
                         // Bug fix: 更新本地版本文件后再切换
                         if (!write_version(server_version)) {
