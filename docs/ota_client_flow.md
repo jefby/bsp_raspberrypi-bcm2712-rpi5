@@ -192,9 +192,9 @@ check_and_update_config()
 
 ## 9. 待完善项
 
-- [ ] SHA256 / 数字签名验证（当前仅检查文件大小）
+- [ x] SHA256 / 数字签名验证（当前仅检查文件大小）
 - [ ] HTTPS 支持（当前 libcurl 配置无 SSL 验证）
 - [ ] 断点续传（`CURLOPT_RESUME_FROM`）
-- [ ] 下载失败后的自动回滚（switch_ifs 成功但新镜像无法启动时）
-- [ ] `/var/boot` 挂载重试逻辑（当前失败即退出）
+- [x ] 下载失败后的自动回滚（switch_ifs 成功但新镜像无法启动时）
+- [x ] `/var/boot` 挂载重试逻辑（当前失败即退出）
 - [ ] `-d` 参数的真正 fork/setsid 守护进程化（当前依赖 shell `&`）
