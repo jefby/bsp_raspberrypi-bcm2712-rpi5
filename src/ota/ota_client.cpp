@@ -324,45 +324,54 @@ static std::string read_file_content(const std::string& path) {
     return ss.str();
 }
 
-// 检查并更新 ota_config：从服务端拉取 /ota_config，内容有变则覆盖本地并热重载
-// 返回 true 表示配置已更新（调用方可据此决定是否跳过本轮 IFS 检查）
+// 检查并更新 ota_config：从服务端拉取 /ota_config，内容有变则热重载
+// /etc/ 在 QNX IFS 中为只读，持久化路径按优先级降级：原路径 → /tmp/ota_config
+// 无论是否能持久化，新配置都会热重载到内存
 bool check_and_update_config() {
     std::string url = g_config.server_url + "/ota_config";
     std::string remote_content;
 
-    if (!curl_get(url, remote_content)) {
-        // 拉取失败不影响正常 OTA 流程
-        return false;
-    }
-
+    if (!curl_get(url, remote_content)) return false;
     if (remote_content.empty()) return false;
 
     std::string local_content = read_file_content(g_config.ota_config_path);
-
     if (remote_content == local_content) return false;
 
-    log_msg("Remote ota_config differs from local, updating: " + g_config.ota_config_path);
+    log_msg("Remote ota_config differs from local, applying update");
 
-    // 备份旧配置
-    std::string backup = g_config.ota_config_path + ".bak";
+    // 先写到临时文件，用于热重载（不依赖原路径是否可写）
+    const std::string tmp_path = "/tmp/ota_config.new";
     {
-        std::ofstream dst(backup);
-        dst << local_content;
-    }
-
-    // 写入新配置
-    {
-        std::ofstream dst(g_config.ota_config_path);
-        if (!dst.is_open()) {
-            log_msg("Failed to write new ota_config");
+        std::ofstream tmp(tmp_path);
+        if (!tmp.is_open()) {
+            log_msg("Failed to write temp config, skipping update");
             return false;
         }
-        dst << remote_content;
+        tmp << remote_content;
     }
 
-    // 热重载：重新解析配置（server_url/interval 等立即生效）
-    read_config(g_config.ota_config_path);
-    log_msg("ota_config reloaded. New server: " + g_config.server_url);
+    // 尝试持久化到原路径，失败则降级到 /tmp/ota_config
+    std::string persist_path = g_config.ota_config_path;
+    {
+        std::ofstream dst(persist_path);
+        if (!dst.is_open()) {
+            persist_path = "/tmp/ota_config";
+            log_msg("Cannot write to " + g_config.ota_config_path +
+                    " (read-only), persisting to " + persist_path);
+            std::ofstream fallback(persist_path);
+            if (fallback.is_open()) fallback << remote_content;
+        } else {
+            dst << remote_content;
+            // 备份旧配置（原路径可写时才有意义）
+            std::ofstream bak(g_config.ota_config_path + ".bak");
+            if (bak.is_open()) bak << local_content;
+        }
+    }
+
+    // 热重载：从临时文件解析新配置，立即生效
+    read_config(tmp_path);
+    g_config.ota_config_path = persist_path;
+    log_msg("ota_config reloaded. Server: " + g_config.server_url);
     return true;
 }
 
