@@ -513,6 +513,48 @@ bool switch_ifs(const std::string& new_ifs) {
     return true;
 }
 
+// ==================== 回滚检测 ====================
+
+// 启动时检查上次 OTA 切换是否成功。
+// switch_ifs() 调用前写入 /var/boot/ota_pending（记录期望激活的 IFS 文件名），
+// 重启后 OTA 客户端启动即说明新镜像可引导，此时清除标记。
+// 若 config.txt 与 pending 不符（switch_ifs 写 config.txt 中途失败），
+// 则清理已下载但未激活的新镜像并删除标记，保持原槽运行。
+void check_rollback() {
+    std::string pending_path = g_config.boot_path + "/ota_pending";
+    std::ifstream pf(pending_path);
+    if (!pf.is_open()) return;
+
+    std::string expected_ifs;
+    std::getline(pf, expected_ifs);
+    pf.close();
+    expected_ifs.erase(0, expected_ifs.find_first_not_of(" \t\r\n"));
+    expected_ifs.erase(expected_ifs.find_last_not_of(" \t\r\n") + 1);
+
+    if (expected_ifs.empty()) {
+        std::remove(pending_path.c_str());
+        return;
+    }
+
+    std::string active_ifs = get_active_ifs();
+    log_msg("Post-OTA check: expected=" + expected_ifs + " active=" + active_ifs);
+
+    if (active_ifs == expected_ifs) {
+        log_msg("OTA boot verified OK: running " + active_ifs);
+        std::remove(pending_path.c_str());
+    } else {
+        // config.txt 未成功切换（switch_ifs 写入中途失败），仍在旧镜像运行
+        // 清理已下载但未激活的新镜像，避免占用 /var/boot 空间
+        std::string failed_path = g_config.boot_path + "/" + expected_ifs;
+        if (file_exists(failed_path)) {
+            log_msg("Removing unused IFS after rollback: " + failed_path);
+            remove_file(failed_path);
+        }
+        std::remove(pending_path.c_str());
+        log_msg("Rollback complete: staying on " + active_ifs);
+    }
+}
+
 // ==================== OTA 主循环 ====================
 void ota_loop() {
     log_msg("OTA Client started");
@@ -523,6 +565,8 @@ void ota_loop() {
         log_msg("OTA is disabled in configuration");
         return;
     }
+
+    check_rollback();
 
     while (true) {
         try {
@@ -570,6 +614,12 @@ void ota_loop() {
                             log_msg("Failed to write version file, aborting update");
                             remove_file(target_path);
                         } else {
+                            // 写入待确认标记后再切换，启动后 check_rollback() 验证
+                            std::string pending_path = g_config.boot_path + "/ota_pending";
+                            std::ofstream pending(pending_path);
+                            if (pending.is_open()) pending << target_ifs;
+                            pending.close();
+
                             switch_ifs(target_ifs);
                             break;
                         }
@@ -635,10 +685,19 @@ int main(int argc, char* argv[]) {
     g_config.log_file        = "/tmp/ota_client.log";
     g_config.ota_config_path = "/etc/ota_config";
 
-    // 确保 /var/boot 已挂载
+    // 确保 /var/boot 已挂载，SD 卡上电后设备节点可能需要短暂等待，最多重试 5 次
     if (!is_mounted("/var/boot")) {
-        if (!ensure_boot_mounted()) {
-            std::cerr << "Failed to mount /var/boot, exiting" << std::endl;
+        const int max_retries = 5;
+        bool mounted = false;
+        for (int attempt = 1; attempt <= max_retries; ++attempt) {
+            log_msg("Mounting /var/boot, attempt " + std::to_string(attempt) +
+                    "/" + std::to_string(max_retries));
+            if (ensure_boot_mounted()) { mounted = true; break; }
+            if (attempt < max_retries) mysleep(3);
+        }
+        if (!mounted) {
+            log_msg("Failed to mount /var/boot after " +
+                    std::to_string(max_retries) + " attempts, exiting");
             return 1;
         }
     }
