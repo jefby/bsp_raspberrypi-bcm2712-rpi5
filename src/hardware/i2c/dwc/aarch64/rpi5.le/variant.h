@@ -46,8 +46,8 @@
 #define SS_THD_LOW          4700    /* tLOW = 4.7 us */
 #define SS_SCL_FALL_TIME    100     /* scl_falling_time = 0.1 us */
 
-#define FS_THD_HIGH         4700    /* tHD;STA = tHIGH  = 4.7 us */
-#define FS_THD_LOW          4700    /* tLOW = 4.7 us */
-#define FS_SCL_FALL_TIME    100     /* scl_falling_time = 0.1 us */
+#define FS_THD_HIGH         600     /* tHD;STA = tHIGH  = 0.6 us */
+#define FS_THD_LOW          1300    /* tLOW = 1.3 us */
+#define FS_SCL_FALL_TIME    300     /* scl_falling_time = 0.3 us */
 
 #endif /* VARIANT_H__INCLUDED */

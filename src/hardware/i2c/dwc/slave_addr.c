@@ -47,9 +47,17 @@ int32_t dwc_i2c_set_slave_addr(void *hdl, uint32_t addr, i2c_addrfmt_t fmt)
     dwc_dev_t   *dev = hdl;
 
     if (fmt == I2C_ADDRFMT_7BIT) {
+        if (addr > 0x7FU) {
+            errno = EINVAL;
+            return -1;
+        }
         dev->master_cfg &= ~DW_IC_CON_10BITADDR_MASTER;
     }
     else if (fmt == I2C_ADDRFMT_10BIT) {
+        if (addr > 0x3FFU) {
+            errno = EINVAL;
+            return -1;
+        }
         dev->master_cfg |= DW_IC_CON_10BITADDR_MASTER;
     }
     else {
