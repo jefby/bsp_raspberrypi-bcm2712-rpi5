@@ -40,6 +40,7 @@
 
 
 #include "proto.h"
+#include <stdint.h>
 
 static i2c_status_t dwc_i2c_sendrecv(void* const hdl, void* const txbuf,
                 const uint32_t txlen, void* const rxbuf, const uint32_t rxlen, const uint32_t stop)
@@ -47,7 +48,9 @@ static i2c_status_t dwc_i2c_sendrecv(void* const hdl, void* const txbuf,
     dwc_dev_t  *dev = hdl;
     i2c_status_t    ret = I2C_STATUS_ERROR;
 
-    (void)stop;
+    if (txlen > (UINT32_MAX - rxlen)) {
+        return I2C_STATUS_ERROR;
+    }
 
     dev->txlen  = txlen;                    // how many bytes for slave transmit (isend)
     dev->rxlen  = rxlen;                    // how many bytes for slave receive (irecv)
@@ -56,6 +59,7 @@ static i2c_status_t dwc_i2c_sendrecv(void* const hdl, void* const txbuf,
     dev->rdlen  = 0;                        // how many data have been read from RxFIFO
     dev->txbuf  = txbuf;
     dev->rxbuf  = rxbuf;
+    dev->stop   = stop;
     dev->status = 0;
 
     if (dev->xlen <= 0U) {
@@ -67,6 +71,8 @@ static i2c_status_t dwc_i2c_sendrecv(void* const hdl, void* const txbuf,
         return I2C_STATUS_BUSY;
     }
 
+    i2c_reg_write32(dev, DW_IC_RX_TL, 0);
+
     /* Clear and enable interrupts */
     (void)i2c_reg_read32(dev, DW_IC_CLR_INTR);
     i2c_reg_write32(dev, DW_IC_INTR_MASK, DW_IC_INTR_DEFAULT_MASK);
@@ -77,8 +83,17 @@ static i2c_status_t dwc_i2c_sendrecv(void* const hdl, void* const txbuf,
     /* Disabled interrupts */
     i2c_reg_write32(dev, DW_IC_INTR_MASK, 0);
 
-    /* Disable the I2C adapter */
-    (void)dwc_i2c_enable(dev, DW_IC_ENABLE_STATUS_DISABLE);
+    if ((ret == I2C_STATUS_DONE) && (dev->stop == 0U)) {
+        dev->active_no_stop = 1;
+    }
+    else {
+        dev->active_no_stop = 0;
+    }
+
+    if (dev->stop != 0U) {
+        /* Disable the I2C adapter */
+        (void)dwc_i2c_enable(dev, DW_IC_ENABLE_STATUS_DISABLE);
+    }
 
     return ret;
 }
@@ -118,11 +133,6 @@ int _i2c_master_sendrecv(resmgr_context_t *ctp, io_devctl_t *msg, i2c_ocb_t *ocb
 
     if ((sizeof(*hdr) + hdr->send_len) > msg->i.nbytes) {
         i2c_slogf(dev->verbosity, _SLOG_ERROR, "Incomplete send data");
-        return EINVAL;
-    }
-
-    if ((sizeof(*hdr) + hdr->recv_len) > msg->i.nbytes) {
-        i2c_slogf(dev->verbosity, _SLOG_ERROR, "Receive buffer too short");
         return EINVAL;
     }
 
@@ -175,6 +185,11 @@ int _i2c_master_sendrecv(resmgr_context_t *ctp, io_devctl_t *msg, i2c_ocb_t *ocb
         return EIO;
     }
     ocb->status = I2C_STATUS_DONE;
+
+    if (hdr->send_len > (UINT32_MAX - hdr->recv_len)) {
+        i2c_slogf(dev->verbosity, _SLOG_ERROR, "sendrecv length overflow");
+        return EINVAL;
+    }
 
     if ((hdr->send_len + hdr->recv_len) > 0U) {
         mstatus = dwc_i2c_sendrecv(dev->hdl, txbuf, hdr->send_len, rxbuf, hdr->recv_len, hdr->stop);

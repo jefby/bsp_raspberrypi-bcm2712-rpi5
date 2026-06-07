@@ -145,6 +145,21 @@ int32_t dwc_i2c_bus_active(dwc_dev_t* const dev)
 	int32_t busy_retry = BUSY_RETRY;
 	int32_t ret;
 
+	if (dev->active_no_stop != 0U) {
+		if ((dev->slave_addr != dev->active_slave_addr) ||
+				(dev->slave_addr_fmt != dev->active_slave_addr_fmt)) {
+			logerr("Can't change slave address during a no-STOP transaction.");
+			dwc_i2c_reset(dev);
+			return (int32_t)I2C_STATUS_BUSY;
+		}
+
+		dev->restart = 1;
+		i2c_reg_write32(dev, DW_IC_INTR_MASK, 0);
+		return 0;
+	}
+
+	dev->restart = 0;
+
 	ret = dwc_i2c_wait_bus_not_busy(dev);
 	while ((ret != 0) && (busy_retry >= 0)) {
 
@@ -178,6 +193,8 @@ int32_t dwc_i2c_bus_active(dwc_dev_t* const dev)
 		i2c_reg_write32(dev, DW_IC_TAR,
 				dev->slave_addr | DW_IC_TAR_10BITADDR_MASTER);
 	}
+	dev->active_slave_addr = dev->slave_addr;
+	dev->active_slave_addr_fmt = dev->slave_addr_fmt;
 
 	/* set speed and master mode */
 	i2c_reg_write32(dev, DW_IC_CON, dev->master_cfg);

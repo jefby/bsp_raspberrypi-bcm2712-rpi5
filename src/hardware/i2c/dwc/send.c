@@ -47,8 +47,6 @@ i2c_status_t dwc_i2c_send(void *hdl, void *buf, uint32_t len, uint32_t stop)
     dwc_dev_t  *dev = hdl;
     i2c_status_t    ret = I2C_STATUS_ERROR;
 
-    (void)stop;
-
     if (len <= 0U) {
         return I2C_STATUS_DONE;
     }
@@ -59,12 +57,15 @@ i2c_status_t dwc_i2c_send(void *hdl, void *buf, uint32_t len, uint32_t stop)
     dev->wrlen  = 0;                        // how many cmds have been write to TxFIFO
     dev->rdlen  = 0;                        // how many data have been read from RxFIFO
     dev->txbuf  = buf;
+    dev->stop   = stop;
     dev->status = 0;
 
     /* Active I2C bus */
     if (0 != dwc_i2c_bus_active(dev)) {
         return I2C_STATUS_BUSY;
     }
+
+    i2c_reg_write32(dev, DW_IC_RX_TL, 0);
 
     /* Clear and enable interrupts */
     (void)i2c_reg_read32(dev, DW_IC_CLR_INTR);
@@ -76,8 +77,17 @@ i2c_status_t dwc_i2c_send(void *hdl, void *buf, uint32_t len, uint32_t stop)
     /* Disabled interrupts */
     i2c_reg_write32(dev, DW_IC_INTR_MASK, 0);
 
-    /* Disable the I2C adapter */
-    (void)dwc_i2c_enable(dev, DW_IC_ENABLE_STATUS_DISABLE);
+    if ((ret == I2C_STATUS_DONE) && (dev->stop == 0U)) {
+        dev->active_no_stop = 1;
+    }
+    else {
+        dev->active_no_stop = 0;
+    }
+
+    if (dev->stop != 0U) {
+        /* Disable the I2C adapter */
+        (void)dwc_i2c_enable(dev, DW_IC_ENABLE_STATUS_DISABLE);
+    }
 
     return ret;
 }

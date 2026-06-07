@@ -155,9 +155,12 @@ static int32_t dwc_i2c_process_intr(dwc_dev_t* const dev)
         /* Note: this bit should been cleaned only when the value of DW_IC_TXFLR large than the value of DW_IC_TX_TL */
         for (uint32_t i = 0; i < dev->fifo_depth; i++) {
             if (dev->wrlen >= dev->xlen) {
-                /* No more command left, disable R_TX_EMPTY interrupt */
-                reg = i2c_reg_read32(dev, DW_IC_INTR_MASK) & ~DW_IC_INTR_TX_EMPTY;
-                i2c_reg_write32(dev, DW_IC_INTR_MASK, reg);
+                if ((dev->stop != 0U) || (dev->rxlen != 0U) ||
+                        ((i2c_reg_read32(dev, DW_IC_STATUS) & DW_IC_STATUS_TFE) != 0U)) {
+                    /* No more command left, disable R_TX_EMPTY interrupt */
+                    reg = i2c_reg_read32(dev, DW_IC_INTR_MASK) & ~DW_IC_INTR_TX_EMPTY;
+                    i2c_reg_write32(dev, DW_IC_INTR_MASK, reg);
+                }
                 break;
             }
 
@@ -168,7 +171,7 @@ static int32_t dwc_i2c_process_intr(dwc_dev_t* const dev)
 
             if (dev->wrlen < dev->txlen) {
                 /* Command for master-transmit */
-                if (dev->wrlen == (dev->xlen - 1U)) {
+                if ((dev->stop != 0U) && (dev->wrlen == (dev->xlen - 1U))) {
                     /* If last byte for master-transmit, force set STOP condition */
                     reg = (uint32_t)*dev->txbuf++ | DW_IC_DATA_CMD_WRITE | DW_IC_DATA_CMD_STOP;
                 }
@@ -178,7 +181,7 @@ static int32_t dwc_i2c_process_intr(dwc_dev_t* const dev)
             }
             else if ((dev->wrlen == dev->txlen) && (0U != dev->txlen)) {
                 /* First command for master-receive of isendrecv , need restart cmd */
-                if (dev->wrlen == (dev->xlen - 1U)) {
+                if ((dev->stop != 0U) && (dev->wrlen == (dev->xlen - 1U))) {
                     /* If last byte for master-receive, force set STOP condition */
                     reg = DW_IC_DATA_CMD_READ | DW_IC_DATA_CMD_RESTART | DW_IC_DATA_CMD_STOP;
                 }
@@ -188,7 +191,7 @@ static int32_t dwc_i2c_process_intr(dwc_dev_t* const dev)
             }
             else {
                 /* Command for master-receive */
-                if (dev->wrlen == (dev->xlen - 1U)) {
+                if ((dev->stop != 0U) && (dev->wrlen == (dev->xlen - 1U))) {
                     /* If last byte for master-receive, force set STOP condition */
                     reg = DW_IC_DATA_CMD_READ | DW_IC_DATA_CMD_STOP;
                 }
@@ -197,8 +200,28 @@ static int32_t dwc_i2c_process_intr(dwc_dev_t* const dev)
                 }
             }
 
+            if ((dev->restart != 0U) && (dev->wrlen == 0U)) {
+                reg |= DW_IC_DATA_CMD_RESTART;
+            }
+
             i2c_reg_write32(dev, DW_IC_DATA_CMD, reg);
             dev->wrlen++;
+        }
+    }
+
+    if (dev->stop == 0U) {
+        while ((dev->rdlen < dev->rxlen) &&
+                ((i2c_reg_read32(dev, DW_IC_STATUS) & DW_IC_STATUS_RFNE) != 0U)) {
+            reg = i2c_reg_read32(dev, DW_IC_DATA_CMD);
+            *dev->rxbuf++ = (uint8_t)(reg & 0x00FFU);
+            dev->rdlen++;
+        }
+
+        if ((dev->wrlen >= dev->xlen) && (dev->rdlen >= dev->rxlen) &&
+                ((i2c_reg_read32(dev, DW_IC_STATUS) & DW_IC_STATUS_TFE) != 0U)) {
+            dev->status |= (uint32_t)I2C_STATUS_DONE;
+            i2c_reg_write32(dev, DW_IC_INTR_MASK, 0);
+            return EOK;
         }
     }
 
@@ -212,6 +235,8 @@ void dwc_i2c_reset(dwc_dev_t *const dev)
 
     /* Abort the I2C transfer */
     i2c_reg_write32(dev, DW_IC_ENABLE, DW_IC_ENABLE_ABORT | DW_IC_ENABLE_STATUS_ENABLE);
+    dev->active_no_stop = 0;
+    dev->restart = 0;
 
     (void)usleep(1000);
 
@@ -296,5 +321,5 @@ i2c_status_t dwc_i2c_wait_complete(dwc_dev_t* const dev)
         return (i2c_status_t)dev->status;
     }
 
-    return I2C_STATUS_BUSY;
+    return (i2c_status_t)((uint32_t)I2C_STATUS_DONE | (uint32_t)I2C_STATUS_ERROR);
 }

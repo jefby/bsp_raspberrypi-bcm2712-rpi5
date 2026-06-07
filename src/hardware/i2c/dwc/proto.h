@@ -114,6 +114,11 @@ typedef struct {
     uint32_t        rxlen;          // how many bytes for slave receive (irecv)
     uint32_t        wrlen;          // how many cmds have been write to TxFIFO
     uint32_t        rdlen;          // how many data have been read from RxFIFO
+    uint32_t        stop;           // whether to issue STOP at the end of the transaction
+    uint32_t        active_no_stop; // previous transaction completed without STOP
+    uint32_t        restart;        // issue RESTART on first command
+    unsigned        active_slave_addr;
+    i2c_addrfmt_t   active_slave_addr_fmt;
 
     /* Other information */
     uint32_t        verbose;
