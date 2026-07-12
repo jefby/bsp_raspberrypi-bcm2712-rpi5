@@ -1,5 +1,14 @@
 # OTA 快速参考
 
+## 日常发布更新（推荐）
+
+```bash
+# 仓库根目录
+bash build.sh              # 编译成功后
+bash auto_deploy_new.sh    # 上传 IFS + SHA256 + version.txt
+# bash auto_deploy_new.sh 2  # 本周第 2 次构建 → YYYY.WW.2
+```
+
 ## 编译 OTA 客户端
 
 ```bash
@@ -11,14 +20,10 @@ make install
 ## 发送 IFS 更新到服务器
 
 ```bash
-# 生成新版本 IFS（假设版本为 2）
+# 推荐用上面的 auto_deploy_new.sh；手动示例：
 mkifs -v rpi5.build ifs-rpi5.bin
-
-# 上传到 Apache2 服务器
-scp ifs-rpi5.bin user@server:/var/www/ota/ifs-rpi5_v2.bin
-
-# 更新版本号
-ssh user@server "echo 2 > /var/www/ota/version.txt"
+scp ifs-rpi5.bin user@server:/var/www/ota/ifs-rpi5_v2026.28.1.bin
+ssh user@server "echo 2026.28.1 > /var/www/ota/version.txt"
 ```
 
 ## 配置文件位置

@@ -8,6 +8,19 @@ For more information on this BSP, including how to build it and load it onto you
 * [BSP User Guide](https://www.qnx.com/developers/docs/BSP8.0/com.qnx.doc.bsp_raspberrypi.bcm2712.rpi5_8.0/topic/about.html)
 * [Build the BSP](https://www.qnx.com/developers/docs/BSP8.0/com.qnx.doc.bsp_raspberrypi.bcm2712.rpi5_8.0/topic/common/bsp_build.html)
 
+### Local build and OTA publish
+
+```bash
+# Build OTA client + IFS image
+bash build.sh
+
+# After a successful build, publish to the OTA server (version YYYY.WW.N)
+bash auto_deploy_new.sh
+# bash auto_deploy_new.sh 2   # optional weekly sequence number
+```
+
+See [src/ota/README.md](src/ota/README.md) for OTA details.
+
 Note that this Git version of the BSP differs from the QNX Software Center (QSC) version in a couple ways:
 * The Git version contains source code only (no prebuilt binaries).
 * The Git version is not fully supported by the QNX Momentics IDE.
