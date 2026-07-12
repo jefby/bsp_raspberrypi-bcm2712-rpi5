@@ -259,7 +259,7 @@ df -h
 slay ota_client
 
 # 手动重启
-shutdown -r now
+shutdown -v
 ```
 
 ## 回滚操作

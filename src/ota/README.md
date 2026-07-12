@@ -113,11 +113,8 @@ OTA_CHECK_INTERVAL=300
 # 启用/禁用 OTA（1=启用，0=禁用）
 OTA_ENABLED=1
 
-# boot 分区挂载点
+# boot 分区挂载点（ota_version / ota_pending 固定在此目录下）
 BOOT_PATH=/var/boot
-
-# 版本文件路径
-VERSION_FILE=/etc/ota_version
 
 # config.txt 路径
 CONFIG_FILE=/var/boot/config.txt

@@ -1,6 +1,6 @@
 # OTA Client 流程梳理
 
-> 基于 `src/ota/ota_client.cpp` + `images/rpi5.build` 整理，版本日期：2026-05-04
+> 基于 `src/ota/ota_client.cpp` + `images/rpi5.build` 整理
 
 ---
 
@@ -23,21 +23,21 @@ RPi5 上电
 ```
 1. gpio-rp1 set 32 op pd dh        # 拉低以太网复位引脚
 2. io-sock（加载网卡驱动）
-3. dhcpcd -bqq                      # 后台获取 IP + DNS（resolv.conf 由钩子写入）
-4. .ssh-server.sh                   # 生成 SSH 密钥 → 启动 sshd
-5. ota_client -c /etc/ota_config -d # 以守护进程模式启动 OTA
-6. devc-pty + qconn                 # 调试支持
+3. dhcpcd -bqq                      # 后台获取 IP + DNS
+4. .ssh-server.sh
+5. ota_client -c /etc/ota_config -d # -d: fork+setsid 守护进程
+6. hwstatusd / qconn ...
 ```
 
-> **顺序关键**：dhcpcd 必须先于 ota_client，否则 DNS 未就绪导致域名解析失败。
+> **顺序关键**：dhcpcd 必须先于 ota_client，否则 DNS 未就绪。
 
 ---
 
-## 2. main() 初始化流程
+## 2. main() 初始化
 
 ```
 main()
-  ├─ 设置默认配置（内存中）
+  ├─ 默认配置（内存）
   │     server_url      = http://192.168.50.148:8080
   │     check_interval  = 300 s
   │     boot_path       = /var/boot
@@ -46,105 +46,57 @@ main()
   │     log_file        = /tmp/ota_client.log
   │     ota_config_path = /etc/ota_config
   │
-  ├─ 检查 /var/boot 是否已挂载（/tmp/mounts 临时文件）
-  │     已挂载 → 跳过
-  │     未挂载 → mount -t dos /dev/sd0t12 /var/boot
-  │               失败 → 直接退出（return 1）
+  ├─ 检查 /var/boot 是否已挂载（/proc/mounts 或 mount 输出）
+  │     未挂载 → mount -t dos /dev/sd0t12 /var/boot（最多 5 次）
   │
-  ├─ 解析命令行参数
-  │     -c <file>  覆盖配置文件路径
-  │     -d         守护进程模式（当前未实现 fork，由 & 后台化）
-  │     -h         打印帮助并退出
-  │
-  ├─ read_config("/etc/ota_config")   # 用文件值覆盖默认值
-  │     注意：BOOT_PATH 会同时更新 version_file（硬绑定）
-  │           VERSION_FILE 配置项被忽略
-  │
-  └─ std::thread(ota_worker).join()   # 进入主循环，永不返回
+  ├─ 参数：-c 配置文件 / -d 守护进程 / -h 帮助
+  ├─ read_config()
+  ├─ 若 -d：fork + setsid
+  └─ ota_loop()
 ```
 
 ---
 
-## 3. OTA 主循环（ota_loop）
+## 3. 版本提交事务（核心）
+
+**版本号在「新槽成功引导之后」才写入 `ota_version`。**
+
+```
+try_apply_update:
+  download+SHA256+size → write_pending(槽,版本) → set_active_ifs → shutdown -v
+
+settle_pending（每轮开头）:
+  active==expected → write_version → clear pending
+  else             → 删未用镜像 → clear pending（版本不动，可重试）
+  commit 失败      → 保留 pending，本轮不发起新升级
+```
+
+`ota_pending` 两行：`IFS 名` + `版本号`。
+
+---
+
+## 4. OTA 主循环
 
 ```
 ota_loop()
-  ├─ 打印启动日志（server / interval）
-  ├─ 若 OTA_ENABLED=0 → 直接 return
-  │
-  └─ while(true)
-        ├─ [1] check_and_update_config()   # Config OTA（可选热重载）
-        ├─ [2] get_version()               # 读本地版本
-        ├─ [3] get_server_version()        # HTTP GET /version.txt
-        │       失败 → sleep(interval) → continue
-        │
-        ├─ [4] is_newer_version(server, local)？
-        │       否 → sleep(interval) → continue
-        │       是 → 进入更新流程
-        │
-        ├─ [5] 确定目标槽
-        │       get_active_ifs() → 解析 /var/boot/config.txt 中 kernel= 行
-        │       active==IFS_A → target=IFS_B，反之亦然
-        │
-        ├─ [6] 构造下载 URL
-        │       filename = ifs-rpi5_v{server_version}.bin
-        │       url      = {server_url}/{filename}
-        │       dest     = /var/boot/{target_ifs}
-        │
-        ├─ [7] download_file(url, dest)
-        │       失败 → sleep(interval) → continue（不删文件，curl 失败时已删）
-        │
-        ├─ [8] verify_ifs(dest)
-        │       检查文件存在 且 size ≥ 10 MB
-        │       失败 → remove_file(dest) → sleep(interval) → continue
-        │
-        ├─ [9] write_version(server_version)
-        │       写入 /var/boot/ota_version
-        │       失败 → remove_file(dest) → continue（放弃本次更新）
-        │
-        ├─ [10] switch_ifs(target_ifs)
-        │         a. 备份 config.txt → config.txt.bak
-        │         b. 逐行读取 config.txt，替换 kernel= 行为新槽
-        │            （其余行原样保留，不破坏 RPi5 其他 config 选项）
-        │         c. 写回 config.txt
-        │         d. sleep 10 s → system("shutdown -v")  # 重启
-        │
-        └─ break（switch_ifs 成功后退出循环）
+  while(true):
+    settle_pending()          # 未解决则 sleep 继续
+    check_and_update_config()
+    if newer(server, local):
+      if try_apply_update(): break   # 已请求重启
+    sleep(interval)
 ```
 
 ---
 
-## 4. Config OTA 子流程（check_and_update_config）
+## 5. A/B 槽
 
-```
-check_and_update_config()
-  ├─ curl GET {server_url}/ota_config → remote_content
-  │   失败或空 → return false（静默，不影响 IFS OTA）
-  │
-  ├─ 比较 remote_content vs 本地文件内容
-  │   相同 → return false（无需更新）
-  │
-  ├─ 写临时文件 /tmp/ota_config.new（用于热重载）
-  │
-  ├─ 尝试持久化
-  │     写 ota_config_path 成功 → 同时备份旧配置为 .bak
-  │     写失败（/etc 只读）     → 降级写 /tmp/ota_config
-  │
-  └─ read_config("/tmp/ota_config.new")   # 热重载到 g_config，立即生效
-     g_config.ota_config_path = persist_path
-```
+| 轮次 | 当前 kernel= | 目标槽 |
+|------|-------------|--------|
+| 第 1 次 | `ifs-rpi5.bin`（A） | `ifs-rpi5_B.bin`（B） |
+| 第 2 次 | `ifs-rpi5_B.bin`（B） | `ifs-rpi5.bin`（A） |
 
----
-
-## 5. A/B 槽切换逻辑
-
-| 轮次 | 当前 kernel= | 目标槽 | 操作 |
-|------|-------------|--------|------|
-| 第 1 次更新 | `ifs-rpi5.bin`（A） | `ifs-rpi5_B.bin`（B） | 覆盖 B，重启加载 B |
-| 第 2 次更新 | `ifs-rpi5_B.bin`（B） | `ifs-rpi5.bin`（A） | 覆盖 A，重启加载 A |
-| 第 N 次更新 | 交替 | 交替 | 始终覆盖非活跃槽 |
-
-> 版本文件 `/var/boot/ota_version` 在覆盖前写入，确保重启后不重复下载。
+`get_active_ifs` / `set_active_ifs` 只识别**非注释**的 `kernel=` 行。
 
 ---
 
@@ -152,49 +104,52 @@ check_and_update_config()
 
 | 格式 | 示例 | 说明 |
 |------|------|------|
-| `YYYY.WW.N` | `2026.18.1` | 新格式（Tesla 风格）：年.ISO周.序号 |
-| `N`（整数） | `3` | 旧格式兼容，解析为 `{year=0, week=0, seq=N}` |
-
-新格式版本始终大于旧格式版本（year/week > 0 vs 0）。  
-比较规则：先比 year → week → seq，均使用整数大小。
+| `YYYY.WW.N` | `2026.18.1` | 年.ISO周.序号 |
+| 整数 `N` | `3` | 兼容旧格式，视为 year=0,week=0,seq=N |
 
 ---
 
-## 7. 关键路径一览
+## 7. 关键路径
 
 | 路径 | 说明 |
 |------|------|
-| `/var/boot/` | FAT 分区挂载点（SD 卡 `/dev/sd0t12`） |
-| `/var/boot/ifs-rpi5.bin` | IFS 槽 A |
-| `/var/boot/ifs-rpi5_B.bin` | IFS 槽 B |
-| `/var/boot/config.txt` | RPi5 引导配置（`kernel=` 选择槽） |
-| `/var/boot/ota_version` | 本地已安装版本号 |
-| `/etc/ota_config` | OTA 配置（只读 IFS 内嵌，可由 Config OTA 覆盖到 /tmp） |
-| `/tmp/ota_client.log` | 运行日志 |
-| `/tmp/ota_config` | Config OTA 降级持久化路径（/etc 只读时） |
+| `/var/boot/` | FAT 分区（`/dev/sd0t12`） |
+| `/var/boot/ifs-rpi5.bin` | 槽 A |
+| `/var/boot/ifs-rpi5_B.bin` | 槽 B |
+| `/var/boot/config.txt` | `kernel=` 选槽 |
+| `/var/boot/ota_version` | 已提交版本（boot 成功后写入） |
+| `/var/boot/ota_pending` | 进行中事务（槽 + 待提交版本） |
+| `/etc/ota_config` | OTA 配置（IFS 内只读，可热更新到 /tmp） |
+| `/tmp/ota_client.log` | 日志 |
 
 ---
 
-## 8. 错误处理策略
+## 8. 错误处理
 
-| 阶段 | 失败行为 |
-|------|---------|
-| /var/boot 挂载失败 | 进程退出（return 1） |
-| 获取服务器版本失败 | 记录日志，sleep，重试 |
-| 下载失败 | curl 内部删除临时文件，记录日志，下轮重试 |
-| 文件校验失败（< 10 MB） | 删除文件，跳过本轮 |
-| 写版本文件失败 | 删除已下载文件，放弃本次更新 |
-| switch_ifs 写 config.txt 失败 | 记录日志，版本已写但未重启（需人工介入） |
-| Config OTA 任何步骤失败 | 静默忽略，不影响 IFS OTA 主流程 |
-| 循环内未捕获异常 | catch(exception) 记录日志，sleep，继续循环 |
+| 阶段 | 行为 |
+|------|------|
+| /var/boot 挂载失败 | 进程退出 |
+| HTTP 非 2xx / curl 失败 | 本轮跳过，重试 |
+| SHA256 / 大小校验失败 | 删镜像，重试 |
+| 写 pending 失败 | 删镜像，重试 |
+| set_active_ifs 失败 | 清 pending、删镜像，版本不变，重试 |
+| boot 成功但写版本失败 | settle 返回 false，每轮重试 commit |
+| 远端 ota_config 无 OTA_SERVER= | 拒绝热加载 |
+| 新 IFS 无法启动 | 应用层无法回滚（需 bootloader/watchdog） |
 
 ---
 
-## 9. 待完善项
+## 9. 安全与刷盘
 
-- [ x] SHA256 / 数字签名验证（当前仅检查文件大小）
-- [ ] HTTPS 支持（当前 libcurl 配置无 SSL 验证）
-- [ ] 断点续传（`CURLOPT_RESUME_FROM`）
-- [x ] 下载失败后的自动回滚（switch_ifs 成功但新镜像无法启动时）
-- [x ] `/var/boot` 挂载重试逻辑（当前失败即退出）
-- [ ] `-d` 参数的真正 fork/setsid 守护进程化（当前依赖 shell `&`）
+- 下载 IFS、写 `config.txt` / `ota_version` / `ota_pending` 后尽量 `fsync`
+- 重启：`system("shutdown -v")`（保持原写法；默认 type 为 reboot）
+- SHA256 比对前将远端哈希规范为小写
+
+---
+
+## 10. 待完善
+
+- [ ] HTTPS / 证书校验
+- [ ] 断点续传
+- [ ] 启动计数 / bootloader 级失败回滚
+- [ ] 数字签名（RSA）

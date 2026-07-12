@@ -134,7 +134,7 @@ vi /var/boot/config.txt
 # kernel=ifs-rpi5_B.bin
 
 # 3. 重启
-shutdown -r now
+shutdown -v
 
 # 4. 更新本地版本号（可选，下次检查会自动降级）
 echo 2 > /etc/ota_version
