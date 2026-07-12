@@ -847,6 +847,12 @@ dhcpcd -bqq
 echo "Starting OTA client ..."
 /usr/bin/ota_client -c /etc/ota_config -d >> /tmp/ota_client.log 2>&1 &
 
+############################################################################################
+## Hardware Status HTTP daemon (hwstatusd)
+############################################################################################
+echo "Starting hwstatusd ..."
+/usr/bin/hwstatusd -p 8080 -H rpi5-qnx -S >> /tmp/hwstatusd.log 2>&1 &
+
 
 ############################################################################################
 ## REMOTE_DEBUG: gdb or Momentics
@@ -937,6 +943,12 @@ echo 200 > /dev/fan
 ## OTA Client (Over-The-Air Update)
 ################################################################################################
 [search=../install/${PROCESSOR}/usr/bin${PFS}${QNX_TARGET}/${PROCESSOR}/usr/bin uid=0 gid=0 perms=0755] /usr/bin/ota_client=../src/ota/bin/ota_client
+
+################################################################################################
+## Hardware Status HTTP daemon (hwstatusd)
+## Source binary: /home/jefby/hwstatusd/hwstatusd (copied to prebuilt/)
+################################################################################################
+[uid=0 gid=0 perms=0755] /usr/bin/hwstatusd=../prebuilt/hwstatusd
 
 /etc/ota_version = {
 1
