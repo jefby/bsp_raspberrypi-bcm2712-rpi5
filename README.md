@@ -15,8 +15,8 @@ For more information on this BSP, including how to build it and load it onto you
 bash build.sh
 
 # After a successful build, publish to the OTA server (version YYYY.WW.N)
-bash auto_deploy_new.sh
-# bash auto_deploy_new.sh 2   # optional weekly sequence number
+bash auto_local_new.sh
+# bash auto_local_new.sh 2   # optional weekly sequence number
 ```
 
 See [src/ota/README.md](src/ota/README.md) for OTA details.

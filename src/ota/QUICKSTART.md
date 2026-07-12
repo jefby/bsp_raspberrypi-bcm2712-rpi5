@@ -5,8 +5,8 @@
 ```bash
 # 仓库根目录
 bash build.sh              # 编译成功后
-bash auto_deploy_new.sh    # 上传 IFS + SHA256 + version.txt
-# bash auto_deploy_new.sh 2  # 本周第 2 次构建 → YYYY.WW.2
+bash auto_local_new.sh    # 上传 IFS + SHA256 + version.txt
+# bash auto_local_new.sh 2  # 本周第 2 次构建 → YYYY.WW.2
 ```
 
 ## 编译 OTA 客户端
@@ -20,7 +20,7 @@ make install
 ## 发送 IFS 更新到服务器
 
 ```bash
-# 推荐用上面的 auto_deploy_new.sh；手动示例：
+# 推荐用上面的 auto_local_new.sh；手动示例：
 mkifs -v rpi5.build ifs-rpi5.bin
 scp ifs-rpi5.bin user@server:/var/www/ota/ifs-rpi5_v2026.28.1.bin
 ssh user@server "echo 2026.28.1 > /var/www/ota/version.txt"

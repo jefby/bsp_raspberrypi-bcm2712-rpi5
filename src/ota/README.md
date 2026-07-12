@@ -23,8 +23,8 @@ bash build.sh
 # 2. 上传 IFS / SHA256 / version.txt 到 OTA 服务器
 #    版本号格式: YYYY.WW.N（如 2026.28.1）
 #    可选参数 seq 为本周序号，默认 1
-bash auto_deploy_new.sh
-# 或: bash auto_deploy_new.sh 2   → 本周第 2 次构建
+bash auto_local_new.sh
+# 或: bash auto_local_new.sh 2   → 本周第 2 次构建
 ```
 
 说明：
@@ -32,7 +32,7 @@ bash auto_deploy_new.sh
 | 步骤 | 脚本 | 作用 |
 |------|------|------|
 | 编译 | `build.sh` | 编 `ota_client`、整包 BSP、`mkifs`，并复制 `ifs-rpi5_B.bin` |
-| 发布 | `auto_deploy_new.sh` | 调用 `auto_local_new.sh`，上传 `ifs-rpi5_v{VERSION}.bin` 与 `.sha256`，最后写 `version.txt` |
+| 发布 | `auto_local_new.sh` | 上传 `ifs-rpi5_v{VERSION}.bin` 与 `.sha256`，最后写 `version.txt` |
 
 设备端 OTA 客户端会在 `OTA_CHECK_INTERVAL`（默认 300 秒）内检查服务器；当服务器版本 **大于** 本地 `/var/boot/ota_version` 时下载并切换 A/B 槽后重启。
 
@@ -74,7 +74,7 @@ make install
 ### 0. 远程 OTA 发布（与上文「日常发布更新」相同）
 
 ```bash
-bash build.sh && bash auto_deploy_new.sh
+bash build.sh && bash auto_local_new.sh
 ```
 
 ### 1. 生成两个 IFS 镜像
