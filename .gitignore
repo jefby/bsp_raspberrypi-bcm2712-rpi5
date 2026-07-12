@@ -26,3 +26,8 @@ src/hardware/support/bcm2712/msix-rp1/aarch64/le/msix-rp1
 src/hardware/support/wdtkick/aarch64/le/wdtkick
 src/ota/bin/
 *local*
+# WiFi secrets — never commit real PSK / passphrase
+prebuilt/wpa_supplicant.wifi.conf
+install/wpa_supplicant.wifi.conf
+**/wpa_supplicant.wifi.local.conf
+

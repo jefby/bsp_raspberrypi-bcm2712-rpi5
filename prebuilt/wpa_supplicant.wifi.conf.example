@@ -1,0 +1,23 @@
+# RPi5 QNX8 WiFi — WPA2-Personal (WPA2-PSK) template.
+# DO NOT put real credentials in git.
+#
+# Setup on board (or locally, then copy; keep local file out of git):
+#   cp /etc/wpa_supplicant.wifi.conf.example /etc/wpa_supplicant.wifi.conf
+#   wpa_passphrase "YourSSID" "YourPassword"
+#   # paste ssid= / psk= into /etc/wpa_supplicant.wifi.conf
+#
+# Local development: copy this file to wpa_supplicant.wifi.conf (gitignored).
+
+ctrl_interface=/var/run/wpa_supplicant
+update_config=1
+ap_scan=1
+
+network={
+	ssid="YourSSID"
+	# Prefer hex PSK from: wpa_passphrase "YourSSID" "YourPassword"
+	psk=0000000000000000000000000000000000000000000000000000000000000000
+	key_mgmt=WPA-PSK
+	proto=RSN
+	pairwise=CCMP
+	group=CCMP
+}

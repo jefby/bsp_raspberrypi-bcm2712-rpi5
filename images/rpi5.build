@@ -826,14 +826,13 @@ gpio-rp1 set 32 op pd dh
 echo "Starting networking ..."
 # disable axge driver to debug
 #io-sock -m phy -m fdt -d cgem -m usb -d axe -d cdce -d smsc
-# original driver
+# original driver (wired / USB NIC only — WiFi is NOT started by default)
 io-sock -m phy -m fdt -d cgem -m usb -d axe -d axge -d cdce -d smsc
 
 echo "Starting DHCP client ..."
 dhcpcd -bqq
 
-# Run wpa_supplicant with configuration file /etc/system/config/wpa_supplicant.conf
-# to connect to WiFi network
+# WiFi is packaged but NOT auto-started. Manual: /usr/bin/start_wifi.sh
 # wpa_supplicant -Dqwdi -i bcm0 -c /etc/system/config/wpa_supplicant.conf &
 
 ############################################################################################
@@ -868,17 +867,21 @@ qconn
 ############################################################################################
 ## Script for wifi support - use second io-sock instance
 ############################################################################################
+# Preferred: one-shot helper (see /usr/bin/start_wifi.sh, conf /etc/wpa_supplicant.wifi.conf)
+#   start_wifi.sh
+#   start_wifi.sh status
+#   start_wifi.sh scan
+#   start_wifi.sh stop
+#   export SOCK=/wifi   # then ping/ifconfig/etc.
+#
+# Manual equivalent:
 # io-sock -o prefix=/wifi -o config=/etc/io-sock.conf -d qwdi_dhd_sdio-2_11-rpi5
-# SOCK=/wifi dhcpcd -bqq
-# SOCK=/wifi wpa_supplicant -D qwdi -i bcm0 -c /tmp/wpa_supplicant.conf &amp;
-# SOCK=/wifi /proc/boot/.ssh-server.sh
-# SOCK=/wifi ifconfig
-# example of =/tmp/wpa_supplicant.conf
-#   ctrl_interface=/var/run/wpa_supplicant
-#   network={
-#   # the SSID of a public Wi-Fi networks
-#   ssid="open_ssid__-example"
-#   key_mgmt=NONE
+# SOCK=/wifi wpa_supplicant -D qwdi -i bcm0 -c /etc/wpa_supplicant.wifi.conf -B
+# SOCK=/wifi dhcpcd -bqq bcm0
+# SOCK=/wifi ifconfig bcm0
+#
+# Auto-start WiFi is INTENTIONALLY OFF. Do not uncomment unless you want boot-time WiFi:
+#   /usr/bin/start_wifi.sh
 
 ################################################################################################
 ## Script for I2C
@@ -987,6 +990,12 @@ dhd_verbose=0
 /usr/sbin/wpa_passphrase=wpa_passphrase-2.11
 /usr/sbin/wpa_supplicant=wpa_supplicant-2.11
 [search=../install/etc${PFS}${QNX_TARGET}/etc] /etc/system/config/wpa_supplicant.conf=wpa_supplicant-2.11.conf
+
+## Minimal WPA2-Personal conf + auto start helper (do NOT use the huge sample conf for STA)
+# Example only in git/image; put real PSK in a local/gitignored file or edit on device.
+[search=../prebuilt uid=0 gid=0 perms=0644] /etc/wpa_supplicant.wifi.conf.example=wpa_supplicant.wifi.conf.example
+[search=../prebuilt uid=0 gid=0 perms=0644] /etc/wpa_supplicant.wifi.conf=wpa_supplicant.wifi.conf.example
+[search=../prebuilt uid=0 gid=0 perms=0755] /usr/bin/start_wifi.sh=start_wifi.sh
 
 /usr/sbin/hostapd=hostapd-2.11
 /usr/sbin/hostapd_cli=hostapd_cli-2.11
