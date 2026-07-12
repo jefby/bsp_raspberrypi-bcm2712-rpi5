@@ -554,11 +554,18 @@ void check_and_update_config() {
 // ==================== Pending 事务 ====================
 //
 // download+verify → write pending(槽,版本) → set kernel → reboot
-// boot 后 settle:
-//   active==expected → write_version → clear
-//   else             → 删未用镜像 → clear（版本不动，可重试）
+//
+// 版本提交规则（修假 commit）：
+//   - 仅进程冷启动时 settle：active==expected → write_version（说明已用新镜像启动）
+//   - 同会话内 config 已切、shutdown 未重启 → 不 commit，只阻塞新升级并等待重启
 //
 // pending 两行: IFS 名 \n 版本号
+
+struct PendingInfo {
+    std::string expected_ifs;
+    std::string version;
+    bool valid;
+};
 
 static bool write_pending(const std::string& target_ifs, const std::string& version) {
     const std::string path = pending_path();
@@ -578,49 +585,74 @@ static void clear_pending() {
     std::remove(pending_path().c_str());
 }
 
-// 结算进行中的 OTA。返回 true = 可发起新升级；false = pending 未解决（勿下载）
-bool settle_pending() {
+static PendingInfo read_pending() {
+    PendingInfo p = {"", "", false};
     std::ifstream pf(pending_path());
-    if (!pf.is_open()) return true;
+    if (!pf.is_open()) return p;
+    std::getline(pf, p.expected_ifs);
+    std::getline(pf, p.version);
+    trim_inplace(p.expected_ifs);
+    trim_inplace(p.version);
+    p.valid = !p.expected_ifs.empty();
+    return p;
+}
 
-    std::string expected_ifs, pending_version;
-    std::getline(pf, expected_ifs);
-    std::getline(pf, pending_version);
-    pf.close();
-    trim_inplace(expected_ifs);
-    trim_inplace(pending_version);
-
-    if (expected_ifs.empty()) {
-        clear_pending();
-        return true;
-    }
+// 冷启动调用一次：已用 pending 目标槽启动则提交版本
+// 返回 true = 可进入主循环升级逻辑
+bool settle_pending_on_boot() {
+    PendingInfo p = read_pending();
+    if (!p.valid) return true;
 
     std::string active = get_active_ifs();
-    log_msg("Pending settle: expected=" + expected_ifs + " active=" + active +
-            (pending_version.empty() ? "" : " version=" + pending_version));
+    log_msg("Boot pending: expected=" + p.expected_ifs + " active=" + active +
+            (p.version.empty() ? "" : (" version=" + p.version)));
 
-    if (active == expected_ifs) {
-        if (!pending_version.empty() && !write_version(pending_version)) {
-            log_msg("Commit version failed, will retry");
-            return false;
+    if (active == p.expected_ifs) {
+        // 新槽已启动（OTA 进程能跑起来即基本证明可引导）
+        if (!p.version.empty() && !write_version(p.version)) {
+            log_msg("Commit version failed, will retry next boot");
+            return false;  // 保留 pending
         }
-        if (!pending_version.empty())
-            log_msg("Version committed: " + pending_version);
+        if (!p.version.empty())
+            log_msg("Version committed after cold start: " + p.version);
         clear_pending();
         log_msg("OTA boot verified OK: " + active);
         return true;
     }
 
-    // 未切到目标槽：仅清 pending，并仅当 config 确实不指向该文件时才删镜像
-    // （防止异常状态下误删「即将/已经是 boot 目标」的文件）
-    std::string path = g_config.boot_path + "/" + expected_ifs;
-    if (active != expected_ifs && file_exists(path)) {
+    // config 未指向目标：切换失败或被改回 → 清 pending，可重试
+    std::string path = g_config.boot_path + "/" + p.expected_ifs;
+    if (file_exists(path)) {
+        log_msg("Removing unused IFS after failed switch: " + path);
+        remove_file(path);
+    }
+    clear_pending();
+    log_msg("Boot pending aborted, version unchanged");
+    return true;
+}
+
+// 主循环：若 pending 仍在且 config 已是目标槽，说明同会话已切槽、尚未冷启动确认
+// 不得 write_version；返回 true 表示应阻塞新升级
+bool pending_blocks_update() {
+    PendingInfo p = read_pending();
+    if (!p.valid) return false;
+
+    std::string active = get_active_ifs();
+    if (active == p.expected_ifs) {
+        log_msg("Pending awaits reboot (kernel already " + active +
+                "); NOT committing version until cold start");
+        return true;
+    }
+
+    // config 又不一致：清掉脏 pending，允许重试
+    std::string path = g_config.boot_path + "/" + p.expected_ifs;
+    if (file_exists(path)) {
         log_msg("Removing unused IFS: " + path);
         remove_file(path);
     }
     clear_pending();
-    log_msg("Pending aborted, version unchanged");
-    return true;
+    log_msg("Stale pending cleared");
+    return false;
 }
 
 // ==================== 一次升级尝试 ====================
@@ -640,8 +672,7 @@ std::string get_server_version() {
 }
 
 // 下载 → 校验 → pending → 切槽 → 请求重启
-// 返回 true = 已成功切换并请求重启（调用方勿再当失败清理）
-// 返回 false = 本轮失败或仍在运行（shutdown 未真正重启时也会回到循环）
+// 返回 true = 已切换并请求重启；false = 本轮失败
 bool try_apply_update(const std::string& server_version) {
     std::string active = get_active_ifs();
     std::string target = (active == IFS_A) ? IFS_B : IFS_A;
@@ -656,7 +687,6 @@ bool try_apply_update(const std::string& server_version) {
         return false;
     }
 
-    // 仅在 config 尚未切到 target 时删镜像，避免「kernel 指向已删文件」
     auto abort_before_switch = [&](const std::string& why) {
         log_msg(why);
         remove_file(target_path);
@@ -676,7 +706,7 @@ bool try_apply_update(const std::string& server_version) {
         return false;
     }
 
-    // 写 kernel 失败：set_active_ifs 内部会 restore bak，config 仍指旧槽，可安全删未激活镜像
+    // 写 kernel 失败：set_active_ifs 会 restore bak，可安全删未激活镜像
     if (!set_active_ifs(target)) {
         log_msg("Failed to update config.txt (restored if possible)");
         remove_file(target_path);
@@ -684,14 +714,11 @@ bool try_apply_update(const std::string& server_version) {
         return false;
     }
 
-    // 此后禁止删 target_path：config 已指向它
+    // 此后禁止删 target；版本等冷启动后再 commit
     request_reboot();
-
-    // shutdown 可能失败（如 mlock）；不要退出进程，等一段时间后若仍存活则继续循环
-    // settle_pending 会在 active==target 时提交版本；镜像保留直到成功启动或人工处理
     mysleep(60);
     if (file_exists(pending_path())) {
-        log_msg("Still running after reboot request; keeping pending and IFS for next boot/settle");
+        log_msg("Still running after reboot request; version NOT committed until next cold start");
     }
     return true;
 }
@@ -708,9 +735,15 @@ void ota_loop() {
         return;
     }
 
+    // 仅冷启动时提交版本（禁止同会话假 commit）
+    settle_pending_on_boot();
+
     while (true) {
         try {
-            if (!settle_pending()) {
+            if (pending_blocks_update()) {
+                // 已切槽、等重启：周期性再请求 reboot，仍不 write_version
+                log_msg("Re-requesting reboot while pending...");
+                request_reboot();
                 mysleep(g_config.check_interval);
                 continue;
             }
@@ -726,11 +759,8 @@ void ota_loop() {
 
             log_msg("Local version: " + local + ", Server version: " + server);
 
-            if (is_newer_version(server, local)) {
-                // 成功切槽并请求重启后仍可能因 shutdown 失败而活着：
-                // 不 break 退出，下轮 settle_pending 提交版本；真正重启后进新镜像
+            if (is_newer_version(server, local))
                 try_apply_update(server);
-            }
 
             mysleep(g_config.check_interval);
         } catch (const std::exception& e) {
