@@ -953,10 +953,6 @@ echo 200 > /dev/fan
 ################################################################################################
 [uid=0 gid=0 perms=0755] /usr/bin/hwstatusd=../prebuilt/hwstatusd
 
-/etc/ota_version = {
-1
-}
-
 /etc/ota_config = {
 OTA_SERVER=http://192.168.50.148:8080
 OTA_CHECK_INTERVAL=300

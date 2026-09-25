@@ -144,6 +144,9 @@ sudo cp ifs-rpi5.bin /var/www/ota/ifs-rpi5_v2.bin
 # 版本文件
 echo "2" | sudo tee /var/www/ota/version.txt
 
+# SHA256 sidecar（OTA 客户端硬依赖：缺了每次更新都会在校验处失败）
+sha256sum /var/www/ota/ifs-rpi5_v2.bin | awk '{print $1}' | sudo tee /var/www/ota/ifs-rpi5_v2.bin.sha256
+
 # 权限
 sudo chmod 644 /var/www/ota/*
 ```
@@ -188,8 +191,9 @@ tail -f /tmp/ota_client.log
 ### 2. 模拟更新
 ```bash
 # 在 Apache2 服务器上
-# 上传新版本的 IFS
+# 上传新版本的 IFS + SHA256 sidecar
 sudo cp ifs-rpi5.bin /var/www/ota/ifs-rpi5_v3.bin
+sha256sum /var/www/ota/ifs-rpi5_v3.bin | awk '{print $1}' | sudo tee /var/www/ota/ifs-rpi5_v3.bin.sha256
 
 # 更新版本号
 echo "3" | sudo tee /var/www/ota/version.txt
@@ -212,7 +216,7 @@ tail -f /tmp/ota_client.log
 ### 4. 验证更新成功
 ```bash
 # 重启后，检查当前版本
-cat /etc/ota_version  # 应输出：3
+cat /var/boot/ota_version  # 应输出新版本号（首次成功冷启动后）
 
 # 检查当前 IFS
 cat /var/boot/config.txt  # kernel=ifs-rpi5_B.bin 或 ifs-rpi5.bin
