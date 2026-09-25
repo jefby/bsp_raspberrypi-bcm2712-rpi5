@@ -309,13 +309,13 @@ bool set_active_ifs(const std::string& new_ifs) {
             return false;
         }
         for (const auto& l : lines) out << l << "\n";
-        int fd = fileno(out.file());
-        if (fd >= 0 && fsync(fd) != 0) {
-            log_msg("fsync failed for temp config, aborting update");
-            remove_file(tmp.c_str());
-            restore_config_bak();
-            return false;
-        }
+        // close 会 flush 到内核 page cache
+    }
+    if (!fsync_path(tmp)) {
+        log_msg("fsync failed for temp config, aborting update");
+        remove_file(tmp.c_str());
+        restore_config_bak();
+        return false;
     }
 
     if (rename(tmp.c_str(), g_config.config_file.c_str()) != 0) {
