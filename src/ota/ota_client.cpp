@@ -70,8 +70,9 @@ static std::string trimmed(std::string s) {
 }
 
 // 刷路径对应文件到存储（FAT 上 OTA 写 config/IFS 后需要）
+// 用 O_RDWR 打开以确保 FAT 驱动正确刷盘
 static bool fsync_path(const std::string& path) {
-    int fd = open(path.c_str(), O_RDONLY);
+    int fd = open(path.c_str(), O_RDWR);
     if (fd < 0) return false;
     int rc = fsync(fd);
     close(fd);
@@ -299,17 +300,27 @@ bool set_active_ifs(const std::string& new_ifs) {
     }
     if (!found) lines.push_back("kernel=" + new_ifs);
 
+    // 原子替换：先写 .tmp，fsync，再 rename（FAT 支持 rename）
+    const std::string tmp = g_config.config_file + ".tmp";
     {
-        std::ofstream out(g_config.config_file);
+        std::ofstream out(tmp);
         if (!out.is_open()) {
-            log_msg("Failed to write config: " + g_config.config_file);
+            log_msg("Failed to write temp config: " + tmp);
             return false;
         }
         for (const auto& l : lines) out << l << "\n";
+        int fd = fileno(out.file());
+        if (fd >= 0 && fsync(fd) != 0) {
+            log_msg("fsync failed for temp config, aborting update");
+            remove_file(tmp.c_str());
+            restore_config_bak();
+            return false;
+        }
     }
 
-    if (!fsync_path(g_config.config_file)) {
-        log_msg("fsync failed for config.txt, restoring bak");
+    if (rename(tmp.c_str(), g_config.config_file.c_str()) != 0) {
+        log_msg("rename failed for config.txt, restoring bak");
+        remove_file(tmp.c_str());
         restore_config_bak();
         return false;
     }
@@ -673,7 +684,38 @@ std::string get_server_version() {
 
 // 下载 → 校验 → pending → 切槽 → 请求重启
 // 返回 true = 已切换并请求重启；false = 本轮失败
+// 检查 /var/boot (FAT) 剩余空间是否足够存放 IFS + 元数据
+static bool check_boot_space(size_t required_bytes) {
+    char cmd[256];
+    snprintf(cmd, sizeof(cmd), "df -k %s | tail -1 | awk '{print $4}'", g_config.boot_path.c_str());
+    FILE* f = popen(cmd, "r");
+    if (!f) {
+        log_msg("check_boot_space: popen df failed");
+        return false;
+    }
+    long free_kb = 0;
+    if (fscanf(f, "%ld", &free_kb) != 1 || free_kb <= 0) {
+        pclose(f);
+        log_msg("check_boot_space: df returned invalid value");
+        return false;
+    }
+    pclose(f);
+
+    // 需要 IFS 大小 + 1MB 余量（FAT 元数据更新）
+    long required_kb = (long)(required_bytes / 1024) + 1024;
+    if (free_kb < required_kb) {
+        log_msg("check_boot_space: only " + std::to_string(free_kb) + " KB free, need " + std::to_string(required_kb) + " KB");
+        return false;
+    }
+    log_msg("check_boot_space: OK (" + std::to_string(free_kb) + " KB free)");
+    return true;
+}
+
 bool try_apply_update(const std::string& server_version) {
+    if (!check_boot_space(MIN_IFS_SIZE)) {
+        log_msg("Insufficient space on /var/boot, skipping update this cycle");
+        return false;
+    }
     std::string active = get_active_ifs();
     std::string target = (active == IFS_A) ? IFS_B : IFS_A;
     std::string target_path = g_config.boot_path + "/" + target;
