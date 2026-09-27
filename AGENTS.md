@@ -12,6 +12,7 @@
 - Read files in full before wide-ranging changes, before editing files you have not fully inspected, and when asked to investigate or audit. Do not rely on search snippets for broad changes.
 - C++11 only (`qcc -Vgcc_ntoaarch64le_cxx`, `-std=c++11`). No features beyond what QCC's libc++ supports; e.g. `ofstream::file()` is unsupported — use `close()` + `fsync_path()`.
 - Check the QNX headers under `install/` and the SDP docs before guessing at an API. Do not invent QNX/system calls.
+- **Never record plaintext secrets in code, docs, logs, or commit messages**: no passwords, API keys, tokens, private keys, or credentials. If a credential is needed at runtime, reference an env var / config file; use a placeholder (e.g. `<password>`) in examples and keep the real value out of the repo.
 - Inline single-purpose helpers that have only one call site. Prefer the standard library or a native platform feature over reinventing it.
 - **OTA invariants (do not break without explicit confirmation):**
   - A/B slot discipline: updates always target the *other* slot than the active one (detected from `config.txt`); never overwrite the IFS currently running.
