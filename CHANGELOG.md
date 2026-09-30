@@ -2,6 +2,11 @@
 
 All notable changes to the RPi5 QNX 8 BSP are documented in this file.
 
+## [v0.0.5] — 2026-09-30
+
+### Fixed (Images)
+- sshd keepalive (`ClientAliveInterval 30` / `ClientAliveCountMax 3`): reaps half-open SSH sessions. Root cause of "SSH unreachable after ~2 days": QNX 8 `sshd-session` processes leak (stuck in SIGWAITINFO, never exit) and leaked interactive sessions hold a pty from `devc-pty`'s default pool of 8, so new interactive logins eventually fail. A power cycle clears it. `sshd_config` is now an inline minimal config in `rpi5.build` (was the stock SDP copy whose only active directives were `AuthorizedKeysFile` and the sftp `Subsystem`).
+
 ## [v0.0.4] — 2026-09-25
 
 ### Fixed (OTA Client)

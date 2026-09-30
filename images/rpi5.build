@@ -290,7 +290,20 @@ fi
 [uid=0 gid=0 perms=0755] /usr/bin/ssh-keygen=ssh-keygen
 [type=file] /etc/resolv.conf=../prebuilt/resolv.conf
 [type=link] /etc/ssh = /dev/shmem
-/dev/shmem/sshd_config=${QNX_TARGET}/etc/ssh/sshd_config
+## Minimal effective sshd config: the stock QNX file shipped only these two
+## active directives, everything else is OpenSSH defaults.
+## ClientAlive* reaps sessions whose client vanished without a close. QNX 8
+## sshd-session can leak (stuck in SIGWAITINFO) and hold a pty from the small
+## devc-pty pool, which made SSH unresponsive after days of use.
+/dev/shmem/sshd_config = {
+AuthorizedKeysFile	.ssh/authorized_keys
+
+Subsystem	sftp	/usr/libexec/sftp-server
+
+TCPKeepAlive yes
+ClientAliveInterval 30
+ClientAliveCountMax 3
+}
 
 /etc/esh = {
 }
