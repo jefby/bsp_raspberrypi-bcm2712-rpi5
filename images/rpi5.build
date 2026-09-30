@@ -374,7 +374,7 @@ fi
 ################################################################################################
 ## PCI driver HW Modules and configuration file
 ################################################################################################
-/lib/dll/pci/pci_hw-bcm2712-rpi5.so=pci/pci_hw-bcm2712-rpi5.so
+/lib/dll/pci/pci_hw-bcm2712-rpi5.so=../prebuilt/pci_hw-bcm2712-rpi5.so
 
 
 [uid=0 gid=0 perms=0444] /etc/system/config/pci/pci_hw-bcm2712-rpi5.cfg = {
