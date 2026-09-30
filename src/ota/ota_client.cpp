@@ -574,28 +574,40 @@ void check_and_update_config() {
 
 // ==================== Pending 事务 ====================
 //
-// download+verify → write pending(槽,版本,切槽时uptime/墙钟) → set kernel → reboot
+// download+verify → write pending(槽,版本,切槽时uptime,切槽时墙钟,见证位) → set kernel → reboot
 //
-// 版本提交规则（修假 commit）：仅系统真正重启后 settle（active==expected 且
-// 确认重启过）→ write_version。“真的重启过”用两个互补判据：
-//   a) CLOCK_MONOTONIC 回绕（当前 uptime < 切槽时 uptime）——最直接；
-//   b) 本次启动的墙钟起点比切槽时推算的起点晚 >30s——补 a 的盲区：
-//      若切槽发生在开机后第一轮检查（记录的 uptime 很小），后续开机到
-//      settle 的 uptime 可能 ≥ 记录值，仅靠 a 会误判“未重启”而无限重启。
-//      真重启至少耗时 10s(shutdown 等待)+引导时间；仅进程重启时两个起点
-//      相等（时钟已同步状态下漂移远小于 30s）。
-// ota_client 为开机自启进程，冷启动时本函数必然运行在系统启动后几十秒内。
+// 版本提交规则（修假 commit）：只有系统真正重启过才 settle（active==expected 且
+// 确认重启过）→ write_version。判据按可靠性排序：
 //
-// pending 四行: IFS 名 \n 版本号 \n 切槽时 uptime 秒 \n 切槽时墙钟秒
-// 旧格式（两行，无 uptime/墙钟）：按旧行为视为已重启，避免升级后卡死。
+//   1) 见证文件（硬判据）：切槽时在 /tmp/ota_switch_witness 留一个文件。
+//      /tmp 是 rpi5.build 的 [type=link] /dev/shmem，即 procnto 的内核内存
+//      命名空间，重启必然清空：文件还在 = 同一个 boot（绝不 commit），
+//      文件没了 = 重启过。不依赖时钟，不受校时影响。创建失败时见证位记 0，
+//      退回下面两个时钟判据。
+//   2) CLOCK_MONOTONIC 回绕（当前 uptime < 切槽时 uptime）：QNX 文档明确
+//      CLOCK_MONOTONIC 的 tv_sec 是 seconds since system boot 且不可调整，
+//      重启归零（板上实测 5.5h 开机对应 monotonic=19904s）。
+//   3) boot 时刻推进：墙钟减 uptime 就是内核记录的 UTC seconds when machine
+//      booted（板上实测与 qtime->boot_time 一致）。切槽到下次内核启动之间必有
+//      request_reboot() 的 10s 等待 + 关机 + 固件重启，实测约 12-16s；仅进程
+//      重启时该值约 0，阈值取 5s 两侧留余量。这条补 2) 的盲区：切槽若发生在
+//      开机后很早（记录 uptime 很小），重启后到 settle 的 uptime 可能仍
+//      ≥ 记录值，只看回绕会误判未重启而反复请求重启。
+//
+// pending 五行: IFS 名 / 版本号 / 切槽时 uptime 秒 / 切槽时墙钟秒 / 见证位(0|1)
+// 旧格式（缺后三行）按旧行为视为已重启，避免升级后卡死。
 
 struct PendingInfo {
     std::string expected_ifs;
     std::string version;
     int64_t switch_uptime_sec;   // -1 = 旧格式无此字段
-    int64_t switch_wall_sec;     // 0   = 旧格式无此字段
+    int64_t switch_wall_sec;     //  0 = 旧格式无此字段
+    bool witness_ok;             // 切槽时见证文件创建成功
     bool valid;
 };
+
+// /dev/shmem 命名空间里的文件：重启必被清空，是“重启过”的硬证据
+static const char* kRebootWitnessPath = "/tmp/ota_switch_witness";
 
 static int64_t uptime_sec_now() {
     struct timespec ts;
@@ -605,6 +617,20 @@ static int64_t uptime_sec_now() {
 }
 
 static bool write_pending(const std::string& target_ifs, const std::string& version) {
+    // 见证文件先写：只要它存在，就说明系统自切槽起没重启过
+    bool witness_ok = false;
+    {
+        std::ofstream wf(kRebootWitnessPath);
+        if (wf.is_open()) {
+            wf << target_ifs << " " << version << "\n";
+            wf.close();
+            witness_ok = true;
+        } else {
+            log_msg("Warning: cannot create reboot witness " +
+                    std::string(kRebootWitnessPath) + "; will use clock checks");
+        }
+    }
+
     const std::string path = pending_path();
     std::ofstream pf(path);
     if (!pf.is_open()) {
@@ -612,7 +638,8 @@ static bool write_pending(const std::string& target_ifs, const std::string& vers
         return false;
     }
     pf << target_ifs << "\n" << version << "\n"
-       << uptime_sec_now() << "\n" << (int64_t)time(nullptr) << "\n";
+       << uptime_sec_now() << "\n" << (int64_t)time(nullptr) << "\n"
+       << (witness_ok ? 1 : 0) << "\n";
     pf.close();
     if (!fsync_path(path))
         log_msg("Warning: fsync failed for " + path);
@@ -621,41 +648,48 @@ static bool write_pending(const std::string& target_ifs, const std::string& vers
 
 static void clear_pending() {
     std::remove(pending_path().c_str());
+    // 事务结束：没重启的路径（abort/陈旧 pending）下见证文件还在，一并清掉
+    std::remove(kRebootWitnessPath);
 }
 
 static PendingInfo read_pending() {
-    PendingInfo p = {"", "", -1, 0, false};
+    PendingInfo p = {"", "", -1, 0, false, false};
     std::ifstream pf(pending_path());
     if (!pf.is_open()) return p;
     std::getline(pf, p.expected_ifs);
     std::getline(pf, p.version);
-    std::string up, wall;
+    std::string up, wall, wit;
     std::getline(pf, up);
     std::getline(pf, wall);
+    std::getline(pf, wit);
     trim_inplace(p.expected_ifs);
     trim_inplace(p.version);
     trim_inplace(up);
     trim_inplace(wall);
+    trim_inplace(wit);
     if (!up.empty()) {
         try { p.switch_uptime_sec = std::stoll(up); } catch (...) {}
     }
     if (!wall.empty()) {
         try { p.switch_wall_sec = std::stoll(wall); } catch (...) {}
     }
+    p.witness_ok = (wit == "1");
     p.valid = !p.expected_ifs.empty();
     return p;
 }
 
 // “写下 pending 之后系统是否真的重启过”
 static bool system_rebooted_since(const PendingInfo& p) {
+    if (p.witness_ok)
+        return !file_exists(kRebootWitnessPath);   // 判据 1：内存 fs 被重启清空
     if (p.switch_uptime_sec < 0 || p.switch_wall_sec <= 0)
-        return true;   // 旧格式：按旧行为视为已重启
+        return true;                               // 旧格式：按旧行为视为已重启
     const int64_t u_now = uptime_sec_now();
     if (u_now < p.switch_uptime_sec)
-        return true;                                    // 判据 a：单调钟回绕
+        return true;                               // 判据 2：单调钟回绕
     const int64_t boot_ts_then = p.switch_wall_sec - p.switch_uptime_sec;
     const int64_t boot_ts_now  = (int64_t)time(nullptr) - u_now;
-    return boot_ts_now > boot_ts_then + 30;             // 判据 b：启动点推进
+    return boot_ts_now > boot_ts_then + 5;         // 判据 3：boot 时刻推进 >5s
 }
 
 // 系统真正重启后调用一次：已用 pending 目标槽启动且确认发生过重启则提交版本

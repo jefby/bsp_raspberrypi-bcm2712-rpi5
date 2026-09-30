@@ -63,15 +63,26 @@ main()
 
 ```
 try_apply_update:
-  download+SHA256+size → write_pending(槽,版本) → set_active_ifs → shutdown -v
+  download+SHA256+size → write_pending(槽,版本,切槽时 uptime/墙钟) → set_active_ifs → shutdown -v
 
-settle_pending（每轮开头）:
-  active==expected → write_version → clear pending
-  else             → 删未用镜像 → clear pending（版本不动，可重试）
-  commit 失败      → 保留 pending，本轮不发起新升级
+settle_pending（进程启动时一次）:
+  active==expected 且确认真的重启过 → write_version → clear pending
+  active==expected 但无重启证据     → 保留 pending（进程重启 ≠ 系统重启，不 commit）
+  else                             → 删未用镜像 → clear pending（版本不动，可重试）
+  commit 失败                      → 保留 pending，本轮不发起新升级
+  config.txt 读不出                → 推迟 settle（不猜槽位）
 ```
 
-`ota_pending` 两行：`IFS 名` + `版本号`。
+`ota_pending` 五行：`IFS 名` + `版本号` + `切槽时 uptime 秒` + `切槽时墙钟秒` + 见证位（0/1）。
+缺后三行的旧文件按「已重启」处理，保持原行为。
+
+「确认真的重启过」的判据按可靠性排序（见 `system_rebooted_since`）：
+
+| 判据 | 依据 | 说明 |
+|------|------|------|
+| 见证文件 | `/tmp/ota_switch_witness` 是否还在 | `/tmp` 是 `[type=link] /dev/shmem`（内核内存 fs），重启必清空。文件在 = 同一个 boot，文件没了 = 重启过。不受校时影响。创建失败时见证位记 0，退回下面两条 |
+| 单调钟回绕 | 当前 uptime < 切槽时 uptime | QNX 文档：`CLOCK_MONOTONIC` 的 tv_sec 是 seconds since system boot 且不可调整 |
+| boot 时刻推进 | 墙钟 − uptime 即内核 `qtime->boot_time` | 切槽到下次内核启动之间必有 `request_reboot()` 的 10s 等待 + 关机 + 固件重启（实测约 12-16s），仅进程重启时约 0，阈值 5s。补上一条的盲区：切槽若发生在开机后很早，重启后到 settle 的 uptime 可能仍 ≥ 记录值 |
 
 ---
 
@@ -79,11 +90,14 @@ settle_pending（每轮开头）:
 
 ```
 ota_loop()
+  settle_pending_on_boot()          # 仅进程启动时一次
   while(true):
-    settle_pending()          # 未解决则 sleep 继续
+    if pending_blocks_update():     # pending 未确认：阻塞新升级
+      if need_reboot: 再次请求重启    # config.txt 读不出时不请求，避免重启循环
+      sleep(interval); continue
     check_and_update_config()
     if newer(server, local):
-      if try_apply_update(): break   # 已请求重启
+      try_apply_update()            # 成功则 set_active_ifs + shutdown -v
     sleep(interval)
 ```
 
@@ -118,7 +132,8 @@ ota_loop()
 | `/var/boot/ifs-rpi5_B.bin` | 槽 B |
 | `/var/boot/config.txt` | `kernel=` 选槽 |
 | `/var/boot/ota_version` | 已提交版本（boot 成功后写入） |
-| `/var/boot/ota_pending` | 进行中事务（槽 + 待提交版本） |
+| `/var/boot/ota_pending` | 进行中事务（槽 + 待提交版本 + 切槽时刻 + 见证位） |
+| `/tmp/ota_switch_witness` | 切槽时创建的重启见证（`/tmp` → `/dev/shmem`，重启即消失） |
 | `/etc/ota_config` | OTA 配置（IFS 内只读，可热更新到 /tmp） |
 | `/tmp/ota_client.log` | 日志 |
 
@@ -134,6 +149,8 @@ ota_loop()
 | 写 pending 失败 | 删镜像，重试 |
 | set_active_ifs 失败 | 清 pending、删镜像，版本不变，重试 |
 | boot 成功但写版本失败 | settle 返回 false，每轮重试 commit |
+| 仅 ota_client 进程重启（系统未重启） | 不提交版本，保留 pending，继续请求重启 |
+| config.txt 读不出（无 `kernel=` 行） | 不猜槽位：settle 推迟、升级阻塞、不请求重启（避免重启循环） |
 | 远端 ota_config 无 OTA_SERVER= | 拒绝热加载 |
 | 新 IFS 无法启动 | 应用层无法回滚（需 bootloader/watchdog） |
 
