@@ -7,6 +7,15 @@ All notable changes to the RPi5 QNX 8 BSP are documented in this file.
 ### Fixed (Images)
 - sshd keepalive (`ClientAliveInterval 30` / `ClientAliveCountMax 3`): reaps half-open SSH sessions. Root cause of "SSH unreachable after ~2 days": QNX 8 `sshd-session` processes leak (stuck in SIGWAITINFO, never exit) and leaked interactive sessions hold a pty from `devc-pty`'s default pool of 8, so new interactive logins eventually fail. A power cycle clears it. `sshd_config` is now an inline minimal config in `rpi5.build` (was the stock SDP copy whose only active directives were `AuthorizedKeysFile` and the sftp `Subsystem`).
 
+### Fixed (OTA Client)
+- Removed dead `/etc/ota_version` from `rpi5.build` (never read/written by code); `setup_ota_build.sh` now emits `<file>.bin.sha256` in both upload sections — hard dependency of the OTA client, missing sidecar fails every update at verification; version verify command reads `/var/boot/ota_version` to match the path the code actually uses
+
+### Added (Images)
+- `pci_hw-bcm2712-rpi5.so`: prebuilt PCI driver binary added to IFS (`rpi5.build` updated)
+
+### Added (Docs)
+- `docs/PCI_Analysis.md`: RPi5 PCI/PCIe analysis, enriched with RP1 peripherals datasheet
+
 ## [v0.0.4] — 2026-09-25
 
 ### Fixed (OTA Client)
