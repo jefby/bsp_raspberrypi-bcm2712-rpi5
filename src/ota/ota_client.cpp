@@ -15,6 +15,8 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cerrno>
+#include <ctime>
+#include <time.h>
 #include <thread>
 #include <chrono>
 
@@ -235,18 +237,26 @@ static std::string kernel_ifs_from_line(const std::string& line) {
     return name;
 }
 
-std::string get_active_ifs() {
+// 解析 config.txt 的 kernel= 行。
+// 失败（读不到 / 无 kernel= 行）返回 false：此时无法知道哪个槽在运行，
+// 调用方必须中止升级而不是猜测——猜错会把新镜像写进正在运行的 IFS。
+bool get_active_ifs(std::string* out) {
+    if (out) out->clear();
     std::ifstream file(g_config.config_file);
     if (!file.is_open()) {
-        log_msg("Config file not found, assuming IFS_A is active");
-        return IFS_A;
+        log_msg("Config file not found: " + g_config.config_file);
+        return false;
     }
     std::string line;
     while (std::getline(file, line)) {
         std::string name = kernel_ifs_from_line(line);
-        if (!name.empty()) return name;
+        if (!name.empty()) {
+            if (out) *out = name;
+            return true;
+        }
     }
-    return IFS_A;
+    log_msg("No kernel= line in " + g_config.config_file);
+    return false;
 }
 
 // 从 config.txt.bak 恢复（写 kernel 失败时用，避免 kernel= 已改但镜像被删）
@@ -564,19 +574,35 @@ void check_and_update_config() {
 
 // ==================== Pending 事务 ====================
 //
-// download+verify → write pending(槽,版本) → set kernel → reboot
+// download+verify → write pending(槽,版本,切槽时uptime/墙钟) → set kernel → reboot
 //
-// 版本提交规则（修假 commit）：
-//   - 仅进程冷启动时 settle：active==expected → write_version（说明已用新镜像启动）
-//   - 同会话内 config 已切、shutdown 未重启 → 不 commit，只阻塞新升级并等待重启
+// 版本提交规则（修假 commit）：仅系统真正重启后 settle（active==expected 且
+// 确认重启过）→ write_version。“真的重启过”用两个互补判据：
+//   a) CLOCK_MONOTONIC 回绕（当前 uptime < 切槽时 uptime）——最直接；
+//   b) 本次启动的墙钟起点比切槽时推算的起点晚 >30s——补 a 的盲区：
+//      若切槽发生在开机后第一轮检查（记录的 uptime 很小），后续开机到
+//      settle 的 uptime 可能 ≥ 记录值，仅靠 a 会误判“未重启”而无限重启。
+//      真重启至少耗时 10s(shutdown 等待)+引导时间；仅进程重启时两个起点
+//      相等（时钟已同步状态下漂移远小于 30s）。
+// ota_client 为开机自启进程，冷启动时本函数必然运行在系统启动后几十秒内。
 //
-// pending 两行: IFS 名 \n 版本号
+// pending 四行: IFS 名 \n 版本号 \n 切槽时 uptime 秒 \n 切槽时墙钟秒
+// 旧格式（两行，无 uptime/墙钟）：按旧行为视为已重启，避免升级后卡死。
 
 struct PendingInfo {
     std::string expected_ifs;
     std::string version;
+    int64_t switch_uptime_sec;   // -1 = 旧格式无此字段
+    int64_t switch_wall_sec;     // 0   = 旧格式无此字段
     bool valid;
 };
+
+static int64_t uptime_sec_now() {
+    struct timespec ts;
+    if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0)
+        return (int64_t)time(nullptr);   // 退化为墙钟（启动早期两者近似）
+    return (int64_t)ts.tv_sec;
+}
 
 static bool write_pending(const std::string& target_ifs, const std::string& version) {
     const std::string path = pending_path();
@@ -585,7 +611,8 @@ static bool write_pending(const std::string& target_ifs, const std::string& vers
         log_msg("Failed to write pending: " + path);
         return false;
     }
-    pf << target_ifs << "\n" << version << "\n";
+    pf << target_ifs << "\n" << version << "\n"
+       << uptime_sec_now() << "\n" << (int64_t)time(nullptr) << "\n";
     pf.close();
     if (!fsync_path(path))
         log_msg("Warning: fsync failed for " + path);
@@ -597,28 +624,64 @@ static void clear_pending() {
 }
 
 static PendingInfo read_pending() {
-    PendingInfo p = {"", "", false};
+    PendingInfo p = {"", "", -1, 0, false};
     std::ifstream pf(pending_path());
     if (!pf.is_open()) return p;
     std::getline(pf, p.expected_ifs);
     std::getline(pf, p.version);
+    std::string up, wall;
+    std::getline(pf, up);
+    std::getline(pf, wall);
     trim_inplace(p.expected_ifs);
     trim_inplace(p.version);
+    trim_inplace(up);
+    trim_inplace(wall);
+    if (!up.empty()) {
+        try { p.switch_uptime_sec = std::stoll(up); } catch (...) {}
+    }
+    if (!wall.empty()) {
+        try { p.switch_wall_sec = std::stoll(wall); } catch (...) {}
+    }
     p.valid = !p.expected_ifs.empty();
     return p;
 }
 
-// 冷启动调用一次：已用 pending 目标槽启动则提交版本
+// “写下 pending 之后系统是否真的重启过”
+static bool system_rebooted_since(const PendingInfo& p) {
+    if (p.switch_uptime_sec < 0 || p.switch_wall_sec <= 0)
+        return true;   // 旧格式：按旧行为视为已重启
+    const int64_t u_now = uptime_sec_now();
+    if (u_now < p.switch_uptime_sec)
+        return true;                                    // 判据 a：单调钟回绕
+    const int64_t boot_ts_then = p.switch_wall_sec - p.switch_uptime_sec;
+    const int64_t boot_ts_now  = (int64_t)time(nullptr) - u_now;
+    return boot_ts_now > boot_ts_then + 30;             // 判据 b：启动点推进
+}
+
+// 系统真正重启后调用一次：已用 pending 目标槽启动且确认发生过重启则提交版本
 // 返回 true = 可进入主循环升级逻辑
 bool settle_pending_on_boot() {
     PendingInfo p = read_pending();
     if (!p.valid) return true;
 
-    std::string active = get_active_ifs();
+    std::string active;
+    if (!get_active_ifs(&active)) {
+        // 连活跃槽都读不出来：不动 pending、不删镜像，等下一轮再试。
+        // 保守处理，绝不在此状态下做任何破坏性动作。
+        log_msg("Boot pending: cannot read active IFS, deferring settle");
+        return false;
+    }
     log_msg("Boot pending: expected=" + p.expected_ifs + " active=" + active +
             (p.version.empty() ? "" : (" version=" + p.version)));
 
     if (active == p.expected_ifs) {
+        if (!system_rebooted_since(p)) {
+            // 只是 ota_client 进程重启、系统没重启（shutdown 失败/进程被杀后拉起）：
+            // 绝不提交版本。保持 pending，主循环会继续强制请求重启。
+            log_msg("Pending awaits true cold start (no reboot evidence); "
+                    "NOT committing version");
+            return false;
+        }
         // 新槽已启动（OTA 进程能跑起来即基本证明可引导）
         if (!p.version.empty() && !write_version(p.version)) {
             log_msg("Commit version failed, will retry next boot");
@@ -642,13 +705,24 @@ bool settle_pending_on_boot() {
     return true;
 }
 
-// 主循环：若 pending 仍在且 config 已是目标槽，说明同会话已切槽、尚未冷启动确认
-// 不得 write_version；返回 true 表示应阻塞新升级
-bool pending_blocks_update() {
+// 主循环：若 pending 仍在且 config 已是目标槽，说明尚未冷启动确认
+// 不得 write_version；返回 true 表示应阻塞新升级。
+// out_need_reboot=false 用于“读不出 config.txt”的情形：此时既不能确认槽位、
+// 也不能靠重启获得任何新信息，若仍周期请求重启会变成重启循环。
+bool pending_blocks_update(bool* out_need_reboot) {
+    if (out_need_reboot) *out_need_reboot = true;
     PendingInfo p = read_pending();
     if (!p.valid) return false;
 
-    std::string active = get_active_ifs();
+    std::string active;
+    if (!get_active_ifs(&active)) {
+        // 读不出活跃槽：只阻塞，不清 pending/不删镜像/不请求重启——
+        // 此状态下任何猜测都可能指错槽。恢复需人工修好 config.txt。
+        log_msg("Pending present but active IFS unreadable; blocking updates "
+                "(not requesting reboot)");
+        if (out_need_reboot) *out_need_reboot = false;
+        return true;
+    }
     if (active == p.expected_ifs) {
         log_msg("Pending awaits reboot (kernel already " + active +
                 "); NOT committing version until cold start");
@@ -716,7 +790,13 @@ bool try_apply_update(const std::string& server_version) {
         log_msg("Insufficient space on /var/boot, skipping update this cycle");
         return false;
     }
-    std::string active = get_active_ifs();
+    std::string active;
+    if (!get_active_ifs(&active)) {
+        // 无法确认当前运行的槽：宁可放弃本轮，也不能猜。
+        // 猜错会把新镜像写进正在运行的 IFS（违反 A/B 不变量）。
+        log_msg("Cannot determine active IFS, skipping update this cycle");
+        return false;
+    }
     std::string target = (active == IFS_A) ? IFS_B : IFS_A;
     std::string target_path = g_config.boot_path + "/" + target;
     std::string url = g_config.server_url + "/ifs-rpi5_v" + server_version + ".bin";
@@ -782,10 +862,15 @@ void ota_loop() {
 
     while (true) {
         try {
-            if (pending_blocks_update()) {
+            bool need_reboot = true;
+            if (pending_blocks_update(&need_reboot)) {
                 // 已切槽、等重启：周期性再请求 reboot，仍不 write_version
-                log_msg("Re-requesting reboot while pending...");
-                request_reboot();
+                if (need_reboot) {
+                    log_msg("Re-requesting reboot while pending...");
+                    request_reboot();
+                } else {
+                    log_msg("Pending blocked on unreadable config; no reboot requested");
+                }
                 mysleep(g_config.check_interval);
                 continue;
             }
