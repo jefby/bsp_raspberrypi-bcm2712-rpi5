@@ -2,6 +2,19 @@
 
 All notable changes to the RPi5 QNX 8 BSP are documented in this file.
 
+## [v0.0.6] — 2026-09-30
+
+### Fixed (OTA Client)
+- `get_active_ifs` now fails closed: on a missing/unreadable `config.txt` it returns false instead of guessing the slot, and all three call sites abort the cycle rather than compute a wrong target (a wrong guess could have written the new image into the currently running IFS).
+- Pending transaction gains hard reboot evidence: switching slots now drops `/tmp/ota_switch_witness` in the kernel memory namespace (`/dev/shmem`, cleared on every reboot), so "no witness" is definitive proof of a real reboot. Version commit at settle requires this evidence; process restarts without a system reboot no longer false-commit.
+- Clock heuristics demoted to fallback with corrected thresholds (monotonic rewind, or boot instant advanced >5s); the previous 30s threshold was wrong because the old-shutdown + firmware-restart gap on target is only ~12-16s and would have rejected genuine reboots.
+- `ota_pending` grows to five lines (slot, version, switch uptime, switch wall clock, witness bit); legacy two-line files keep their old behavior.
+
+### Added (Docs)
+- `docs/ota_client_flow.md`: pending transaction state machine with the reboot-evidence criteria and the `/tmp/ota_switch_witness` path.
+
+
+
 ## [v0.0.5] — 2026-09-30
 
 ### Fixed (Images)
