@@ -795,7 +795,11 @@ std::string get_server_version() {
 // 检查 /var/boot (FAT) 剩余空间是否足够存放 IFS + 元数据
 static bool check_boot_space(size_t required_bytes) {
     char cmd[256];
-    snprintf(cmd, sizeof(cmd), "df -k %s | tail -1 | awk '{print $4}'", g_config.boot_path.c_str());
+    // /var/boot 挂在 /var（16MB RAM flash）之下：裸 "df | tail -1" 会取到
+    // /var 那一行（始终 ~10MB 空闲）。必须显式匹配挂载点所在行。
+    snprintf(cmd, sizeof(cmd),
+             "df -k %s | grep -F '%s' | tail -1 | awk '{print $4}'",
+             g_config.boot_path.c_str(), g_config.boot_path.c_str());
     FILE* f = popen(cmd, "r");
     if (!f) {
         log_msg("check_boot_space: popen df failed");
